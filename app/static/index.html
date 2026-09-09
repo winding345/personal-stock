@@ -2,342 +2,332 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>个人库存记录</title>
 <style>
 :root{
-  --bg:#0f172a; --card:#1e293b; --card2:#283548; --line:#334155;
-  --txt:#e2e8f0; --muted:#94a3b8; --brand:#38bdf8; --ok:#34d399;
-  --warn:#f59e0b; --danger:#f87171; --radius:14px;
+  --bg:#0a0f1f; --bg2:#0e1428;
+  --glass:rgba(255,255,255,.055); --glass-h:rgba(255,255,255,.10);
+  --line:rgba(255,255,255,.10);
+  --grad:linear-gradient(135deg,#22d3ee 0%,#6366f1 100%);
+  --grad-soft:linear-gradient(135deg,rgba(34,211,238,.18),rgba(99,102,241,.18));
+  --txt:#eef2ff; --muted:#94a3b8;
+  --ok:#34d399; --warn:#fbbf24; --danger:#fb7185;
+  --r:18px; --sh:0 10px 30px rgba(0,0,0,.35);
+  --sb-h:56px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;}
-body{max-width:720px;margin:0 auto;padding:0 12px 90px;}
-header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,var(--bg) 85%,transparent);padding:14px 0 8px;}
-h1{font-size:20px;margin:0 0 10px;}
-h1 .dot{color:var(--brand)}
-.metricbar{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0;}
-.chip{flex:1;min-width:70px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-  padding:8px 6px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;user-select:none;}
-.chip b{display:block;font-size:18px;color:var(--txt);}
-.chip.on{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset;}
-.chip.alarm b{color:var(--danger)}
-nav.tabs{display:flex;gap:8px;margin:8px 0 4px;overflow-x:auto;padding-bottom:4px;}
-.tab{flex:0 0 auto;padding:7px 14px;background:var(--card);border:1px solid var(--line);
-  border-radius:999px;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap;}
-.tab.on{background:var(--brand);color:#082f49;border-color:var(--brand);font-weight:600;}
-.toolbar{display:flex;gap:8px;margin:8px 0;}
-button{font:inherit;border:none;border-radius:10px;cursor:pointer;padding:9px 14px;color:#082f49;background:var(--brand);}
-button.ghost{background:var(--card2);color:var(--txt);border:1px solid var(--line);}
-button.danger{background:var(--danger);color:#450a0a;}
-button:active{opacity:.8}
-.cat-h{margin:16px 4px 8px;font-size:14px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-  padding:12px;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
-.card .info{flex:1;min-width:0;}
-.card .nm{font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.card .meta{font-size:12px;color:var(--muted);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap;}
-.badge{font-size:11px;padding:2px 6px;border-radius:6px;}
-.badge.low{background:rgba(248,113,113,.18);color:var(--danger)}
-.badge.exp{background:rgba(245,158,11,.18);color:var(--warn)}
-.badge.arch{background:rgba(148,163,184,.15);color:var(--muted)}
-.qty{text-align:center;min-width:64px;}
-.qty .v{font-size:20px;font-weight:700;}
-.qty .u{font-size:11px;color:var(--muted);}
-.btnq{width:38px;height:38px;border-radius:10px;background:var(--card2);color:var(--txt);
-  font-size:20px;line-height:1;border:1px solid var(--line);}
-.btnq.minus{color:var(--danger);}
-.btnq.plus{color:var(--ok);}
-.tools{display:flex;flex-direction:column;gap:6px;align-items:center;}
-.icon-btn{background:transparent;color:var(--muted);padding:4px;font-size:15px;}
-.empty{text-align:center;color:var(--muted);padding:40px 0;}
-.fab{position:fixed;right:16px;bottom:16px;width:58px;height:58px;border-radius:50%;background:var(--brand);
-  font-size:30px;color:#082f49;box-shadow:0 6px 20px rgba(56,189,248,.4);z-index:20;}
-/* modal */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:30;display:none;align-items:flex-end;}
-.overlay.show{display:flex;}
-.sheet{background:#111a2e;width:100%;max-width:720px;margin:0 auto;border-radius:18px 18px 0 0;
-  padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;border-top:1px solid var(--line);}
-.sheet h2{margin:0 0 14px;font-size:17px;display:flex;justify-content:space-between;}
-.sheet h2 .x{background:none;color:var(--muted);font-size:20px;padding:0 4px;}
-.field{margin-bottom:12px;}
-.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
-.field input,.field select,.field textarea{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);
-  background:var(--card2);color:var(--txt);font:inherit;font-size:15px;}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.hidden{display:none!important}
-.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--card2);
-  border:1px solid var(--line);padding:10px 16px;border-radius:10px;font-size:13px;z-index:50;
-  opacity:0;transition:opacity .2s;}
-.toast.show{opacity:1;}
-a{color:var(--brand);}
+html,body{margin:0;height:100%}
+body{
+  color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:
+    radial-gradient(1200px 500px at 85% -10%, rgba(99,102,241,.22), transparent 60%),
+    radial-gradient(900px 420px at -10% 10%, rgba(34,211,238,.18), transparent 55%),
+    linear-gradient(180deg,var(--bg) 0%, var(--bg2) 100%);
+  background-attachment:fixed;
+  min-height:100%;
+  padding:0 0 calc(var(--sb-h) + 92px);
+}
+.max{max-width:720px;margin:0 auto;padding:0 14px}
+
+/* ---------- header hero ---------- */
+header{position:sticky;top:0;z-index:30;padding:calc(14px + env(safe-area-inset-top)) 0 10px;
+  background:linear-gradient(180deg,var(--bg) 30%, transparent 100%);backdrop-filter:blur(6px);}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 14px 10px;}
+.hero .logo{width:44px;height:44px;border-radius:14px;background:var(--grad);display:grid;place-items:center;font-size:22px;box-shadow:0 8px 20px rgba(99,102,241,.4)}
+.hero .t h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.5px}
+.hero .t p{font-size:12px;color:var(--muted);margin:2px 0 0}
+.hero .set{background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:9px;font-size:17px;cursor:pointer}
+
+.search{display:flex;align-items:center;gap:8px;background:var(--glass);border:1px solid var(--line);
+  border-radius:16px;padding:11px 14px;margin:0 14px 12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
+.search .ic{opacity:.6;font-size:15px}
+.search input{flex:1;background:none;border:none;outline:none;color:var(--txt);font:inherit;font-size:15px}
+.search input::placeholder{color:var(--muted)}
+
+/* ---------- stat cards ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 14px 8px;}
+.s{border:1px solid var(--line);border-radius:16px;padding:11px 6px;text-align:center;cursor:pointer;position:relative;overflow:hidden;
+  background:var(--glass);transition:.2s;}
+.s.ring{background:linear-gradient(135deg,rgba(34,211,238,.10),rgba(99,102,241,.14));}
+.s .b{font-size:20px;font-weight:800;line-height:1.1}
+.s .l{font-size:11px;color:var(--muted);margin-top:3px}
+.s .d{position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;background:transparent}
+.s.low .b{color:var(--danger)} .s.low .d{background:var(--danger)}
+.s.exp .b{color:var(--warn)} .s.exp .d{background:var(--warn)}
+.s.near .b{color:var(--ok)} .s.near .d{background:var(--ok)}
+.s.on{box-shadow:0 0 0 1.5px var(--brand1) inset, var(--sh)}
+
+/* ---------- category chips ---------- */
+.cats{display:flex;gap:8px;overflow-x:auto;padding:4px 14px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.cats::-webkit-scrollbar{display:none}
+.catc{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;font-size:13px;color:var(--muted);
+  background:var(--glass);border:1px solid var(--line);cursor:pointer;white-space:nowrap;transition:.15s}
+.catc .em{font-size:15px}
+.catc.on{background:var(--grad);color:#08131f;border-color:transparent;font-weight:600}
+.catc.star{background:var(--glass-h);color:var(--txt)}
+
+/* ---------- list ---------- */
+main{padding:0 14px}
+.sec{display:flex;align-items:center;justify-content:space-between;margin:14px 4px 8px}
+.sec h3{margin:0;font-size:14px;color:var(--muted);font-weight:600}
+.sec .n{font-size:12px;color:var(--muted)}
+.card{display:flex;align-items:center;gap:12px;background:var(--glass);border:1px solid var(--line);
+  border-radius:var(--r);padding:13px 12px;margin-bottom:10px;box-shadow:var(--sh);
+  animation:up .35s both;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:transparent}
+.card.need::before{background:linear-gradient(180deg,var(--danger),transparent)}
+.card.exp::before{background:linear-gradient(180deg,var(--warn),transparent)}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;flex:0 0 auto;
+  background:var(--grad-soft);border:1px solid var(--line)}
+.info{flex:1;min-width:0}
+.info .nm{font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.info .meta{margin-top:5px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:600}
+.pill.low{background:rgba(251,113,133,.16);color:var(--danger)}
+.pill.warn{background:rgba(251,191,36,.16);color:var(--warn)}
+.pill.ok{background:rgba(52,211,153,.16);color:var(--ok)}
+.pill.arch{background:rgba(148,163,184,.15);color:var(--muted)}
+.info .due{margin-top:5px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.info .due.bad{color:var(--danger)} .info .due.warn{color:var(--warn)}
+.qty{text-align:center;flex:0 0 auto}
+.qty .v{font-size:22px;font-weight:800;line-height:1}
+.qty .u{font-size:11px;color:var(--muted);margin-top:2px}
+.step{display:flex;gap:6px;margin-top:7px}
+.sbtn{width:34px;height:30px;border-radius:9px;background:var(--glass-h);border:1px solid var(--line);
+  color:var(--txt);font-size:16px;font-weight:700;cursor:pointer;line-height:1;transition:.1s}
+.sbtn:active{transform:scale(.9)}
+.sbtn.m{color:var(--danger)} .sbtn.p{color:var(--ok)}
+.trash{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;opacity:.55;transition:.2s}
+.trash:active{opacity:1;transform:scale(1.2)}
+.empty{text-align:center;color:var(--muted);padding:56px 20px}
+.empty .e{font-size:44px;margin-bottom:12px}
+.empty p{margin:6px 0}
+
+/* ---------- bottom nav + fab ---------- */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:8px 14px calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,transparent, rgba(10,15,31,.9) 30%);display:flex;justify-content:center;}
+.navin{width:100%;max-width:520px;display:grid;grid-template-columns:1fr 64px 1fr;align-items:center;gap:8px;
+  background:rgba(20,27,48,.8);border:1px solid var(--line);border-radius:22px;padding:8px 10px;backdrop-filter:blur(12px);box-shadow:var(--sh)}
+.nbtn{background:none;border:none;color:var(--muted);font-size:12px;padding:5px;border-radius:12px;cursor:pointer;transition:.15s}
+.nbtn .em{display:block;font-size:18px;margin-bottom:2px}
+.nbtn.on{color:var(--txt);background:var(--glass-h)}
+.fab{width:52px;height:52px;border-radius:50%;background:var(--grad);border:none;color:#08131f;font-size:26px;font-weight:700;
+  cursor:pointer;box-shadow:0 10px 26px rgba(99,102,241,.5);margin:0 auto;transition:.15s}
+.fab:active{transform:scale(.92)}
+
+/* ---------- sheets ---------- */
+.overlay{position:fixed;inset:0;background:rgba(2,6,16,.6);backdrop-filter:blur(2px);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.overlay.show{display:flex}
+.sheet{background:linear-gradient(180deg,#141b30,#0f1526);width:100%;max-width:560px;border-radius:24px 24px 0 0;
+  padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;border:1px solid var(--line);animation:sl .28s both}
+@keyframes sl{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+.sheet h2{margin:0 0 16px;font-size:18px;display:flex;align-items:center;justify-content:space-between}
+.sheet h2 .x{background:var(--glass-h);border:1px solid var(--line);color:var(--muted);font-size:16px;padding:6px 10px;border-radius:10px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);
+  background:rgba(255,255,255,.05);color:var(--txt);font:inherit;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:var(--brand1);box-shadow:0 0 0 3px rgba(34,211,238,.12)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.save{width:100%;padding:14px;border:none;border-radius:14px;background:var(--grad);color:#08131f;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 10px 26px rgba(99,102,241,.35)}
+.check{display:flex;align-items:center;gap:8px}
+.check input{width:auto}
+.toast{position:fixed;left:50%;bottom:calc(var(--sb-h) + 22px);transform:translateX(-50%);background:#1e293b;
+  border:1px solid var(--line);padding:11px 18px;border-radius:12px;font-size:13px;z-index:60;opacity:0;transition:opacity .2s;box-shadow:var(--sh)}
+.toast.show{opacity:1}
+a{color:var(--brand1)}
 </style>
 </head>
 <body>
-<header>
-  <h1>📦 个人库存<span class="dot"> · </span><span id="appName">记录</span></h1>
-  <div class="metricbar" id="metricbar"></div>
-  <nav class="tabs" id="tabs">
-    <div class="tab on" data-f="all">全部</div>
-    <div class="tab" data-f="low">急需补充</div>
-    <div class="tab" data-f="expired">已过期</div>
-    <div class="tab" data-f="expiring">即将过期</div>
-    <div class="tab" data-f="archived">已归档</div>
-  </nav>
-  <div class="toolbar">
-    <button class="ghost" id="btnCat">🏷️ 分类管理</button>
-    <button class="ghost" id="btnExport">⬇️ 备份</button>
+<div class="max">
+
+  <header>
+    <div class="hero">
+      <div class="logo">💊</div>
+      <div class="t">
+        <h1>个人库存</h1>
+        <p id="sub">药箱 · 家庭物品记录</p>
+      </div>
+      <button class="set" id="btnInfo">⚙️</button>
+    </div>
+    <div class="search"><span class="ic">🔍</span><input id="q" type="text" placeholder="搜索名称 / 备注…"></div>
+    <div class="stats" id="stats"></div>
+    <div class="cats" id="cats"></div>
+  </header>
+
+  <main id="list"></main>
+  <div id="empty" class="empty hidden"></div>
+</div>
+
+<!-- 底部导航 + FAB -->
+<div class="nav">
+  <div class="navin">
+    <button class="nbtn on" data-nav="list"><span class="em">📦</span>库存</button>
+    <button class="fab" id="btnAdd">＋</button>
+    <button class="nbtn" data-nav="cat"><span class="em">🏷️</span>分类</button>
   </div>
-</header>
+</div>
 
-<main id="list"></main>
-
-<div id="empty" class="empty hidden">还没有物品，点右下角 + 添加</div>
-
-<button class="fab" id="btnAdd">＋</button>
-
-<!-- 物品新增/编辑 -->
+<!-- 编辑/新增 -->
 <div class="overlay" id="itemOverlay">
   <div class="sheet">
     <h2><span id="itemTitle">新增物品</span><button class="x" data-close>✕</button></h2>
-    <div class="field"><label>名称 *</label><input id="f_name" type="text" placeholder="例如：布洛芬缓释胶囊"></div>
+    <div class="field"><label>名称 *</label><input id="f_name" type="text" placeholder="例如布洛芬缓释胶囊"></div>
     <div class="field"><label>分类</label><select id="f_category"></select></div>
     <div class="row2">
       <div class="field"><label>数量</label><input id="f_quantity" type="number" inputmode="decimal" value="0"></div>
       <div class="field"><label>单位</label><input id="f_unit" type="text" value="盒"></div>
     </div>
     <div class="row2">
-      <div class="field"><label>预警阈值（≤此数量标红）</label><input id="f_threshold" type="number" inputmode="decimal" value="0"></div>
+      <div class="field"><label>预警阈值（≤ 标红）</label><input id="f_threshold" type="number" inputmode="decimal" value="0"></div>
       <div class="field"><label>有效期</label><input id="f_expiry" type="date"></div>
     </div>
     <div class="field"><label>备注</label><textarea id="f_note" rows="2"></textarea></div>
-    <div class="field"><label><input type="checkbox" id="f_archived" style="width:auto"> 设为已归档</label></div>
-    <button id="f_save" style="width:100%;padding:13px">保存</button>
+    <div class="field check"><input type="checkbox" id="f_archived"><label for="f_archived" style="margin:0">设为已归档</label></div>
+    <button class="save" id="f_save">保存</button>
   </div>
 </div>
 
-<!-- 分类管理 -->
+<!-- 分类 -->
 <div class="overlay" id="catOverlay">
   <div class="sheet">
     <h2><span>分类管理</span><button class="x" data-close>✕</button></h2>
-    <div class="field" style="display:flex;gap:8px;">
+    <div class="field" style="display:flex;gap:8px">
       <input id="cat_new" type="text" placeholder="新分类名">
-      <button id="cat_add" style="flex:0 0 auto">添加</button>
+      <button class="save" style="width:auto;padding:0 18px" id="cat_add">添加</button>
     </div>
     <div id="cat_list"></div>
+  </div>
+</div>
+
+<!-- 设置/关于 -->
+<div class="overlay" id="infoOverlay">
+  <div class="sheet">
+    <h2><span>设置 / 备份</span><button class="x" data-close>✕</button></h2>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="save" id="btnExport">⬇️ 导出 JSON 备份</button>
+      <p style="font-size:12px;color:var(--muted);margin:4px 0">数据存于本地 SQLite 文件（<code>./data/stock.db</code>）。导出可作备份，删除前请先导出。</p>
+      <p style="font-size:12px;color:var(--muted);margin:0">图标分类示意：💊 药箱、🍎 食品、🧰 工具…按分类名自动匹配。</p>
+    </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const state = {
-  items: [], categories: [], filter: "all", metric: "all",
-  editingId: null, activeCatList: []
-};
-const $ = s => document.querySelector(s);
-const $$ = s => document.querySelectorAll(s);
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const fmt = n => Number(n).toLocaleString("zh-CN", {maximumFractionDigits:2});
-
-function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show");
-  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1800); }
-
-async function api(path, opts={}){
-  const res = await fetch("/api"+path, {
-    headers:{"Content-Type":"application/json"},
-    ...opts,
-  });
-  if(!res.ok){
-    let detail = res.statusText;
-    try{ const j = await res.json(); if(j.detail) detail = typeof j.detail==="string"?j.detail:JSON.stringify(j.detail); }catch(e){}
-    throw new Error(detail);
-  }
-  const ct = res.headers.get("Content-Type")||"";
-  return ct.includes("json") ? res.json() : res.text();
+const state={items:[],categories:[],filter:"all",cat:0,q:"",editingId:null};
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=n=>Number(n).toLocaleString("zh-CN",{maximumFractionDigits:2});
+const CAT_EMOJI={"家庭药箱":"💊","药箱":"💊","食品":"🍎","零食":"🍪","工具":"🧰","护肤":"🧴","化妆品":"💄","药品":"💊"};
+const cemo=n=>CAT_EMOJI[n]||"📦";
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),1800)}
+async function api(path,opts={}){
+  const r=await fetch("/api"+path,{headers:{"Content-Type":"application/json"},...opts});
+  if(!r.ok){let d=r.statusText;try{const j=await r.json();if(j.detail)d=typeof j.detail==="string"?j.detail:JSON.stringify(j.detail)}catch(e){}throw new Error(d)}
+  const ct=r.headers.get("Content-Type")||"";return ct.includes("json")?r.json():r.text();
 }
+async function load(){state.items=await api("/items");state.categories=await api("/categories");render()}
 
-async function load(){
-  state.items = await api("/items");
-  state.categories = await api("/categories");
-  renderMetrics(); renderTabs(); renderList();
+function visible(){
+  let l=[...state.items];
+  if(state.cat)l=l.filter(i=>i.category_id===state.cat);
+  if(state.filter==="low")l=l.filter(i=>!i.archived&&i.low_stock);
+  else if(state.filter==="expired")l=l.filter(i=>!i.archived&&i.expired);
+  else if(state.filter==="expiring")l=l.filter(i=>!i.archived&&i.expiring_soon);
+  else if(state.filter==="archived")l=l.filter(i=>i.archived);
+  else l=l.filter(i=>!i.archived);
+  if(state.q){const q=state.q.toLowerCase();l=l.filter(i=>i.name.toLowerCase().includes(q)||(i.note||"").toLowerCase().includes(q))}
+  return l;
 }
-
-function renderMetrics(){
-  const s = state.items;
-  const low = s.filter(i=>!i.archived && i.low_stock).length;
-  const exp = s.filter(i=>!i.archived && i.expired).length;
-  const near = s.filter(i=>!i.archived && i.expiring_soon).length;
-  const active = s.filter(i=>!i.archived).length;
-  $("#metricbar").innerHTML = `
-    <div class="chip ${state.metric==='all'?'on':''}" data-m="all"><b>${active}</b>在用物品</div>
-    <div class="chip alarm ${state.metric==='low'?'on':''}" data-m="low"><b>${low}</b>需补充</div>
-    <div class="chip alarm ${state.metric==='expired'?'on':''}" data-m="expired"><b>${exp}</b>已过期</div>
-    <div class="chip ${state.metric==='expiring'?'on':''}" data-m="expiring"><b>${near}</b>将过期</div>`;
-}
-function renderTabs(){ [] /*tabs are static*/ }
-
-function filtered(){
-  let list = state.items;
-  if(state.metric!=="all" && state.filter==="all"){ // prefer specific filter when metric clicked
-    if(state.metric==="low") list=list.filter(i=>!i.archived&&i.low_stock);
-    else if(state.metric==="expired") list=list.filter(i=>!i.archived&&i.expired);
-    else if(state.metric==="expiring") list=list.filter(i=>!i.archived&&i.expiring_soon);
-  } else {
-    if(state.filter==="low") list=list.filter(i=>!i.archived&&i.low_stock);
-    else if(state.filter==="expired") list=list.filter(i=>!i.archived&&i.expired);
-    else if(state.filter==="expiring") list=list.filter(i=>!i.archived&&i.expiring_soon);
-    else if(state.filter==="archived") list=list.filter(i=>i.archived);
-    else list=list.filter(i=>!i.archived);
-  }
-  return list;
-}
-
-function renderList(){
-  const list = filtered();
-  const cont = $("#list"); const empty = $("#empty");
-  const catId = {};
-  state.categories.forEach(c=>catId[c.id]=c.name);
-  // group by category
-  const groups = {};
-  list.forEach(i=>{ const k=i.category_name||"未分类"; (groups[k]=groups[k]||[]).push(i); });
-  if(!list.length){ empty.classList.remove("hidden"); cont.innerHTML=""; return; }
-  empty.classList.add("hidden");
-  let html="";
-  Object.keys(groups).sort().forEach(k=>{
-    html += `<div class="cat-h"><span>${esc(k)}</span><span>${groups[k].length}</span></div>`;
-    groups[k].forEach(i=>{
-      const badges = [];
-      if(i.archived) badges.push(`<span class="badge arch">已归档</span>`);
-      if(i.low_stock) badges.push(`<span class="badge low">需补充</span>`);
-      if(i.expired) badges.push(`<span class="badge exp">已过期</span>`);
-      else if(i.expiring_soon) badges.push(`<span class="badge exp">将过期</span>`);
-      html += `<div class="card">
-        <div class="info">
+function render(){
+  const all=state.items; const act=all.filter(i=>!i.archived);
+  const low=act.filter(i=>i.low_stock).length,exp=act.filter(i=>i.expired).length,near=act.filter(i=>i.expiring_soon).length;
+  const healthy=act.length-low-exp;
+  const pct=act.length?Math.round((act.length-exp-low)*100/act.length):0;
+  $("#stats").innerHTML=`
+    <div class="s ring ${state.filter==='all'?'on':''}" data-f="all"><div class="b">${fmt(pct)}%</div><div class="l">健康度</div></div>
+    <div class="s low ${state.filter==='low'?'on':''}" data-f="low"><div class="b">${low}</div><div class="l">需补充</div><div class="d"></div></div>
+    <div class="s exp ${state.filter==='expired'?'on':''}" data-f="expired"><div class="b">${exp}</div><div class="l">已过期</div><div class="d"></div></div>
+    <div class="s near ${state.filter==='expiring'?'on':''}" data-f="expiring"><div class="b">${near}</div><div class="l">将过期</div><div class="d"></div></div>`;
+  $$("#stats .s").forEach(s=>s.onclick=()=>{state.filter=s.dataset.f;render()});
+  // categories
+  const cc=[{id:0,name:"全部",em:"🗂️"}].concat(state.categories.map(c=>({id:c.id,name:c.name,em:cemo(c.name)})));
+  $("#cats").innerHTML=cc.map(c=>`<div class="catc ${state.cat===c.id?'on':''}" data-c="${c.id}"><span class="em">${c.em}</span>${esc(c.name)}</div>`).join("");
+  $$("#cats .catc").forEach(el=>el.onclick=()=>{state.cat=Number(el.dataset.c);render()});
+  // list
+  const lv=visible();const empty=$("#empty");
+  const groups={};lv.forEach(i=>{const k=i.category_name||"未分类";(groups[k]=groups[k]||[]).push(i)});
+  if(!lv.length){empty.classList.remove("hidden");empty.innerHTML=`<div class="e">📭</div><p>没有符合条件的物品</p><p style="font-size:12px;color:var(--muted)">点右下角 ＋ 添加，或换个筛选条件</p>`;$("#list").innerHTML="";return}
+  empty.classList.add("hidden");let html="";
+  Object.keys(groups).sort((a,b)=>(a==="未分类")-(b==="未分类")||a.localeCompare(b)).forEach(k=>{
+    const it=groups[k];
+    html+=`<div class="sec" style="animation:up .4s both"><h3>${cemo(k)} ${esc(k)}</h3><span class="n">${it.length}</span></div>`;
+    it.forEach((i,idx)=>{
+      const pills=[];
+      if(i.archived)pills.push('<span class="pill arch">已归档</span>');
+      if(i.low_stock)pills.push('<span class="pill low">⚠ 需补充</span>');
+      if(i.expired)pills.push('<span class="pill warn">✖ 已过期</span>');
+      else if(i.expiring_soon)pills.push('<span class="pill warn">⏳ 将过期</span>');
+      const need=i.low_stock,expired=i.expired||i.expiring_soon;
+      const due=i.expiry_date?`<div class="due ${i.expired?'bad':(i.expiring_soon?'warn':'')}">📅 效期 ${esc(i.expiry_date)}${i.expired?' · 已过期':''}</div>`:"";
+      html+=`<div class="card ${need?'need':''} ${expired?'exp':''}" style="animation-delay:${Math.min(idx*18,260)}ms">
+        <div class="ic">${cemo(i.category_name)}</div>
+        <div class="info" data-id="${i.id}">
           <div class="nm">${esc(i.name)}</div>
-          <div class="meta">${badges.join("")}${i.note?`<span>${esc(i.note)}</span>`:""}</div>
-          ${i.expiry_date?`<div class="meta">📅 ${esc(i.expiry_date)}</div>`:""}
+          <div class="meta">${pills.join("")}${i.note?`<span style="font-size:11px;color:var(--muted)">${esc(i.note)}</span>`:""}</div>
+          ${due}
         </div>
-        <div class="qty"><div class="v" style="color:${i.low_stock?"var(--danger)":"var(--txt)"}">${fmt(i.quantity)}</div><div class="u">${esc(i.unit)}</div>
-          <div style="display:flex;gap:4px;justify-content:center;margin-top:2px;">
-            <button class="btnq minus" data-act="minus" data-id="${i.id}">−</button>
-            <button class="btnq plus" data-act="plus" data-id="${i.id}">+</button>
+        <div style="text-align:center;flex:0 0 auto">
+          <div class="qty"><div class="v" style="color:${i.low_stock?'var(--danger)':'var(--txt)'}">${fmt(i.quantity)}</div><div class="u">${esc(i.unit)}</div></div>
+          <div class="step">
+            <button class="sbtn m" data-q="-1" data-id="${i.id}">−</button>
+            <button class="sbtn p" data-q="1" data-id="${i.id}">＋</button>
           </div>
         </div>
-        <div class="tools">
-          <button class="icon-btn" data-act="edit" data-id="${i.id}">✏️</button>
-          <button class="icon-btn" data-act="del" data-id="${i.id}">🗑️</button>
-        </div>
+        <button class="trash" data-del="${i.id}">🗑</button>
       </div>`;
     });
   });
-  cont.innerHTML = html;
-  cont.querySelectorAll("[data-act]").forEach(el=>{
-    el.addEventListener("click", ()=>{
-      const act=el.dataset.act, id=Number(el.dataset.id);
-      if(act==="plus") changeQty(id, +1);
-      else if(act==="minus") changeQty(id, -1);
-      else if(act==="edit") openItem(id);
-      else if(act==="del") delItem(id);
-    });
-  });
+  $("#list").innerHTML=html;
+  // handlers
+  $$(".info[data-id]").forEach(el=>el.onclick=()=>openItem(Number(el.dataset.id)));
+  $$(".sbtn").forEach(b=>b.onclick=async e=>{e.stopPropagation();const id=Number(b.dataset.id);const d=Number(b.dataset.q);await change(id,d)});
+  $$(".trash").forEach(b=>b.onclick=async e=>{e.stopPropagation();if(confirm("删除该物品？")){try{await api(`/items/${b.dataset.del}`,{method:"DELETE"});await load();toast("已删除")}catch(err){toast(err.message)}}});
 }
+async function change(id,delta){try{await api(`/items/${id}/quantity`,{method:"POST",body:JSON.stringify({delta})});await load()}catch(e){toast("修改失败: "+e.message)}}
 
-async function changeQty(id, delta){
-  try{
-    await api(`/items/${id}/quantity`, {method:"POST", body:JSON.stringify({delta})});
-    await load();
-  }catch(e){ toast("修改失败: "+e.message); }
-}
-async function delItem(id){
-  if(!confirm("删除该物品？")) return;
-  try{ await api(`/items/${id}`, {method:"DELETE"}); await load(); toast("已删除"); }
-  catch(e){ toast("删除失败: "+e.message); }
-}
+function fillCat(sel){const s=$("#f_category");s.innerHTML=`<option value="">未分类</option>`+state.categories.map(c=>`<option value="${c.id}" ${c.id===sel?"selected":""}>${esc(c.name)}</option>`).join("")}
+function openItem(id){state.editingId=id||null;$("#itemTitle").textContent=id?"编辑物品":"新增物品";fillCat();
+  if(id){const i=state.items.find(x=>x.id===id);$("#f_name").value=i.name;$("#f_quantity").value=i.quantity;$("#f_unit").value=i.unit;
+    $("#f_threshold").value=i.threshold;$("#f_expiry").value=i.expiry_date||"";$("#f_note").value=i.note||"";$("#f_archived").checked=!!i.archived;$("#f_category").value=i.category_id!=null?i.category_id:""}
+  else{$("#f_name").value="";$("#f_quantity").value=0;$("#f_unit").value="盒";$("#f_threshold").value=0;$("#f_expiry").value="";$("#f_note").value="";$("#f_archived").checked=false}
+  $("#itemOverlay").classList.add("show")}
+async function saveItem(){const b={name:$("#f_name").value.trim(),category_id:$("#f_category").value?Number($("#f_category").value):null,
+  quantity:Number($("#f_quantity").value||0),unit:$("#f_unit").value.trim()||"个",threshold:Number($("#f_threshold").value||0),
+  expiry_date:$("#f_expiry").value||null,note:$("#f_note").value.trim()||null,archived:$("#f_archived").checked};
+  if(!b.name){toast("名称不能为空");return}
+  try{if(state.editingId)await api(`/items/${state.editingId}`,{method:"PUT",body:JSON.stringify(b)});else await api("/items",{method:"POST",body:JSON.stringify(b)});
+    $("#itemOverlay").classList.remove("show");await load();toast(state.editingId?"已更新":"已添加")}catch(e){toast("保存失败: "+e.message)}}
 
-// ---- item form ----
-function fillCategorySelect(selected){
-  const sel = $("#f_category");
-  sel.innerHTML = `<option value="">未分类</option>` + state.categories.map(c=>
-    `<option value="${c.id}" ${c.id===selected?"selected":""}>${esc(c.name)}</option>`).join("");
-}
-function openItem(id){
-  state.editingId = id||null;
-  $("#itemTitle").textContent = id?"编辑物品":"新增物品";
-  fillCategorySelect();
-  if(id){
-    const i = state.items.find(x=>x.id===id);
-    $("#f_name").value=i.name; $("#f_quantity").value=i.quantity; $("#f_unit").value=i.unit;
-    $("#f_threshold").value=i.threshold; $("#f_expiry").value=i.expiry_date||""; $("#f_note").value=i.note||"";
-    $("#f_archived").checked=!!i.archived;
-    $("#f_category").value = i.category_id!=null?i.category_id:"";
-  } else {
-    $("#f_name").value=""; $("#f_quantity").value=0; $("#f_unit").value="盒";
-    $("#f_threshold").value=0; $("#f_expiry").value=""; $("#f_note").value=""; $("#f_archived").checked=false;
-  }
-  $("#itemOverlay").classList.add("show");
-}
-async function saveItem(){
-  const body = {
-    name: $("#f_name").value.trim(),
-    category_id: $("#f_category").value?Number($("#f_category").value):null,
-    quantity: Number($("#f_quantity").value||0),
-    unit: $("#f_unit").value.trim()||"个",
-    threshold: Number($("#f_threshold").value||0),
-    expiry_date: $("#f_expiry").value||null,
-    note: $("#f_note").value.trim()||null,
-    archived: $("#f_archived").checked,
-  };
-  if(!body.name){ toast("名称不能为空"); return; }
-  try{
-    if(state.editingId) await api(`/items/${state.editingId}`, {method:"PUT", body:JSON.stringify(body)});
-    else await api("/items", {method:"POST", body:JSON.stringify(body)});
-    $("#itemOverlay").classList.remove("show");
-    await load(); toast(state.editingId?"已更新":"已添加");
-  }catch(e){ toast("保存失败: "+e.message); }
-}
+function renderCatList(){$("#cat_list").innerHTML=state.categories.map(c=>`<div class="card" style="animation:none"><div class="ic" style="width:38px;height:38px;font-size:18px">${cemo(c.name)}</div><div class="info" style="flex:1"><div class="nm">${esc(c.name)}</div></div><button class="trash" data-cdel="${c.id}" style="opacity:.8">🗑</button></div>`).join("")||`<div class="empty"><div class="e">🏷️</div><p>暂无分类</p></div>`;
+  $$("#cat_list [data-cdel]").forEach(el=>el.onclick=async()=>{if(confirm("删除该分类? 分类下物品会变未分类")){try{await api(`/categories/${el.dataset.cdel}`,{method:"DELETE"});await load();renderCatList()}catch(e){toast(e.message)}}})}
 
-// ---- categories ----
-function openCat(){ renderCatList(); $("#catOverlay").classList.add("show"); }
-function renderCatList(){
-  $("#cat_list").innerHTML = state.categories.map(c=>
-    `<div class="card" style="padding:10px 12px"><div style="flex:1">${esc(c.name)}</div>
-     <button class="icon-btn" data-cdel="${c.id}" style="color:var(--danger)">🗑️</button></div>`
-  ).join("") || `<div class="empty">暂无分类</div>`;
-  $$("#cat_list [data-cdel]").forEach(el=>el.onclick=async ()=>{
-    if(!confirm("删除该分类？该分类下的物品会变为“未分类”。")) return;
-    try{ await api(`/categories/${el.dataset.cdel}`,{method:"DELETE"}); await load(); renderCatList(); }
-    catch(e){ toast(e.message); }
-  });
-}
-
-// ---- event wiring ----
+// wire
 $("#btnAdd").onclick=()=>openItem(null);
-$("#btnCat").onclick=openCat;
-$("#btnExport").onclick=()=>{ window.open("/api/export","_blank"); };
+$("#btnInfo").onclick=()=>$("#infoOverlay").classList.add("show");
+$("#btnExport").onclick=()=>window.open("/api/export","_blank");
 $("#f_save").onclick=saveItem;
-$("#cat_add").onclick=async ()=>{
-  const name=$("#cat_new").value.trim(); if(!name) return;
-  try{ await api("/categories",{method:"POST",body:JSON.stringify({name})}); $("#cat_new").value=""; await load(); renderCatList(); }
-  catch(e){ toast(e.message); }
-};
-$$(".overlay").forEach(ov=>ov.addEventListener("click",e=>{ if(e.target===ov) ov.classList.remove("show"); }));
+$("#cat_add").onclick=async()=>{const n=$("#cat_new").value.trim();if(!n)return;try{await api("/categories",{method:"POST",body:JSON.stringify({name:n})});$("#cat_new").value="";await load();renderCatList()}catch(e){toast(e.message)}};
+$$(".overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("show")}));
 $$("[data-close]").forEach(b=>b.onclick=()=>b.closest(".overlay").classList.remove("show"));
-$$("#tabs .tab").forEach(t=>t.onclick=()=>{ state.filter=t.dataset.f;
-  $$("#tabs .tab").forEach(x=>x.classList.toggle("on",x===t)); renderList(); });
-$("#metricbar").addEventListener("click",e=>{
-  const c=e.target.closest(".chip"); if(!c) return;
-  state.metric=c.dataset.m; renderMetrics();
-  // jump to relevant tab
-  if(state.metric==="low"){ state.filter="low"; setTab("low"); }
-  else if(state.metric==="expired"){ state.filter="expired"; setTab("expired"); }
-  else if(state.metric==="expiring"){ state.filter="expiring"; setTab("expiring"); }
-  renderList();
-});
-function setTab(f){ $$("#tabs .tab").forEach(t=>t.classList.toggle("on",t.dataset.f===f)); }
-$("#f_archived").onclick = () => {};
-
+$$(".nbtn").forEach(b=>b.onclick=()=>{$$(".nbtn").forEach(x=>x.classList.toggle("on",x===b));
+  if(b.dataset.nav==="cat"){renderCatList();$("#catOverlay").classList.add("show")}else{$("#catOverlay").classList.remove("show")}});
+$("#q").addEventListener("input",e=>{state.q=e.target.value.trim();render()});
 load();
 </script>
 </body>
