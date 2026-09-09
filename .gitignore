@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# 本地数据（SQLite）
+data/
+*.db
+*.db-journal
+
+# 环境
+.env

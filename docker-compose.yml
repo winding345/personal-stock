@@ -1,0 +1,13 @@
+services:
+  stock:
+    build: .
+    container_name: personal-stock
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # SQLite 数据持久化：改为你 NAS 上的实际路径
+      - ./data:/data
+    # 环境变量可按需覆盖
+    environment:
+      - STOCK_DB_PATH=/data/stock.db

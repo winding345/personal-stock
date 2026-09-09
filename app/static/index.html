@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>个人库存记录</title>
+<style>
+:root{
+  --bg:#0f172a; --card:#1e293b; --card2:#283548; --line:#334155;
+  --txt:#e2e8f0; --muted:#94a3b8; --brand:#38bdf8; --ok:#34d399;
+  --warn:#f59e0b; --danger:#f87171; --radius:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;}
+body{max-width:720px;margin:0 auto;padding:0 12px 90px;}
+header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,var(--bg) 85%,transparent);padding:14px 0 8px;}
+h1{font-size:20px;margin:0 0 10px;}
+h1 .dot{color:var(--brand)}
+.metricbar{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0;}
+.chip{flex:1;min-width:70px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:8px 6px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;user-select:none;}
+.chip b{display:block;font-size:18px;color:var(--txt);}
+.chip.on{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset;}
+.chip.alarm b{color:var(--danger)}
+nav.tabs{display:flex;gap:8px;margin:8px 0 4px;overflow-x:auto;padding-bottom:4px;}
+.tab{flex:0 0 auto;padding:7px 14px;background:var(--card);border:1px solid var(--line);
+  border-radius:999px;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap;}
+.tab.on{background:var(--brand);color:#082f49;border-color:var(--brand);font-weight:600;}
+.toolbar{display:flex;gap:8px;margin:8px 0;}
+button{font:inherit;border:none;border-radius:10px;cursor:pointer;padding:9px 14px;color:#082f49;background:var(--brand);}
+button.ghost{background:var(--card2);color:var(--txt);border:1px solid var(--line);}
+button.danger{background:var(--danger);color:#450a0a;}
+button:active{opacity:.8}
+.cat-h{margin:16px 4px 8px;font-size:14px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:12px;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.card .info{flex:1;min-width:0;}
+.card .nm{font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.card .meta{font-size:12px;color:var(--muted);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap;}
+.badge{font-size:11px;padding:2px 6px;border-radius:6px;}
+.badge.low{background:rgba(248,113,113,.18);color:var(--danger)}
+.badge.exp{background:rgba(245,158,11,.18);color:var(--warn)}
+.badge.arch{background:rgba(148,163,184,.15);color:var(--muted)}
+.qty{text-align:center;min-width:64px;}
+.qty .v{font-size:20px;font-weight:700;}
+.qty .u{font-size:11px;color:var(--muted);}
+.btnq{width:38px;height:38px;border-radius:10px;background:var(--card2);color:var(--txt);
+  font-size:20px;line-height:1;border:1px solid var(--line);}
+.btnq.minus{color:var(--danger);}
+.btnq.plus{color:var(--ok);}
+.tools{display:flex;flex-direction:column;gap:6px;align-items:center;}
+.icon-btn{background:transparent;color:var(--muted);padding:4px;font-size:15px;}
+.empty{text-align:center;color:var(--muted);padding:40px 0;}
+.fab{position:fixed;right:16px;bottom:16px;width:58px;height:58px;border-radius:50%;background:var(--brand);
+  font-size:30px;color:#082f49;box-shadow:0 6px 20px rgba(56,189,248,.4);z-index:20;}
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:30;display:none;align-items:flex-end;}
+.overlay.show{display:flex;}
+.sheet{background:#111a2e;width:100%;max-width:720px;margin:0 auto;border-radius:18px 18px 0 0;
+  padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;border-top:1px solid var(--line);}
+.sheet h2{margin:0 0 14px;font-size:17px;display:flex;justify-content:space-between;}
+.sheet h2 .x{background:none;color:var(--muted);font-size:20px;padding:0 4px;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);
+  background:var(--card2);color:var(--txt);font:inherit;font-size:15px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.hidden{display:none!important}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--card2);
+  border:1px solid var(--line);padding:10px 16px;border-radius:10px;font-size:13px;z-index:50;
+  opacity:0;transition:opacity .2s;}
+.toast.show{opacity:1;}
+a{color:var(--brand);}
+</style>
+</head>
+<body>
+<header>
+  <h1>📦 个人库存<span class="dot"> · </span><span id="appName">记录</span></h1>
+  <div class="metricbar" id="metricbar"></div>
+  <nav class="tabs" id="tabs">
+    <div class="tab on" data-f="all">全部</div>
+    <div class="tab" data-f="low">急需补充</div>
+    <div class="tab" data-f="expired">已过期</div>
+    <div class="tab" data-f="expiring">即将过期</div>
+    <div class="tab" data-f="archived">已归档</div>
+  </nav>
+  <div class="toolbar">
+    <button class="ghost" id="btnCat">🏷️ 分类管理</button>
+    <button class="ghost" id="btnExport">⬇️ 备份</button>
+  </div>
+</header>
+
+<main id="list"></main>
+
+<div id="empty" class="empty hidden">还没有物品，点右下角 + 添加</div>
+
+<button class="fab" id="btnAdd">＋</button>
+
+<!-- 物品新增/编辑 -->
+<div class="overlay" id="itemOverlay">
+  <div class="sheet">
+    <h2><span id="itemTitle">新增物品</span><button class="x" data-close>✕</button></h2>
+    <div class="field"><label>名称 *</label><input id="f_name" type="text" placeholder="例如：布洛芬缓释胶囊"></div>
+    <div class="field"><label>分类</label><select id="f_category"></select></div>
+    <div class="row2">
+      <div class="field"><label>数量</label><input id="f_quantity" type="number" inputmode="decimal" value="0"></div>
+      <div class="field"><label>单位</label><input id="f_unit" type="text" value="盒"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>预警阈值（≤此数量标红）</label><input id="f_threshold" type="number" inputmode="decimal" value="0"></div>
+      <div class="field"><label>有效期</label><input id="f_expiry" type="date"></div>
+    </div>
+    <div class="field"><label>备注</label><textarea id="f_note" rows="2"></textarea></div>
+    <div class="field"><label><input type="checkbox" id="f_archived" style="width:auto"> 设为已归档</label></div>
+    <button id="f_save" style="width:100%;padding:13px">保存</button>
+  </div>
+</div>
+
+<!-- 分类管理 -->
+<div class="overlay" id="catOverlay">
+  <div class="sheet">
+    <h2><span>分类管理</span><button class="x" data-close>✕</button></h2>
+    <div class="field" style="display:flex;gap:8px;">
+      <input id="cat_new" type="text" placeholder="新分类名">
+      <button id="cat_add" style="flex:0 0 auto">添加</button>
+    </div>
+    <div id="cat_list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const state = {
+  items: [], categories: [], filter: "all", metric: "all",
+  editingId: null, activeCatList: []
+};
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => Number(n).toLocaleString("zh-CN", {maximumFractionDigits:2});
+
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1800); }
+
+async function api(path, opts={}){
+  const res = await fetch("/api"+path, {
+    headers:{"Content-Type":"application/json"},
+    ...opts,
+  });
+  if(!res.ok){
+    let detail = res.statusText;
+    try{ const j = await res.json(); if(j.detail) detail = typeof j.detail==="string"?j.detail:JSON.stringify(j.detail); }catch(e){}
+    throw new Error(detail);
+  }
+  const ct = res.headers.get("Content-Type")||"";
+  return ct.includes("json") ? res.json() : res.text();
+}
+
+async function load(){
+  state.items = await api("/items");
+  state.categories = await api("/categories");
+  renderMetrics(); renderTabs(); renderList();
+}
+
+function renderMetrics(){
+  const s = state.items;
+  const low = s.filter(i=>!i.archived && i.low_stock).length;
+  const exp = s.filter(i=>!i.archived && i.expired).length;
+  const near = s.filter(i=>!i.archived && i.expiring_soon).length;
+  const active = s.filter(i=>!i.archived).length;
+  $("#metricbar").innerHTML = `
+    <div class="chip ${state.metric==='all'?'on':''}" data-m="all"><b>${active}</b>在用物品</div>
+    <div class="chip alarm ${state.metric==='low'?'on':''}" data-m="low"><b>${low}</b>需补充</div>
+    <div class="chip alarm ${state.metric==='expired'?'on':''}" data-m="expired"><b>${exp}</b>已过期</div>
+    <div class="chip ${state.metric==='expiring'?'on':''}" data-m="expiring"><b>${near}</b>将过期</div>`;
+}
+function renderTabs(){ [] /*tabs are static*/ }
+
+function filtered(){
+  let list = state.items;
+  if(state.metric!=="all" && state.filter==="all"){ // prefer specific filter when metric clicked
+    if(state.metric==="low") list=list.filter(i=>!i.archived&&i.low_stock);
+    else if(state.metric==="expired") list=list.filter(i=>!i.archived&&i.expired);
+    else if(state.metric==="expiring") list=list.filter(i=>!i.archived&&i.expiring_soon);
+  } else {
+    if(state.filter==="low") list=list.filter(i=>!i.archived&&i.low_stock);
+    else if(state.filter==="expired") list=list.filter(i=>!i.archived&&i.expired);
+    else if(state.filter==="expiring") list=list.filter(i=>!i.archived&&i.expiring_soon);
+    else if(state.filter==="archived") list=list.filter(i=>i.archived);
+    else list=list.filter(i=>!i.archived);
+  }
+  return list;
+}
+
+function renderList(){
+  const list = filtered();
+  const cont = $("#list"); const empty = $("#empty");
+  const catId = {};
+  state.categories.forEach(c=>catId[c.id]=c.name);
+  // group by category
+  const groups = {};
+  list.forEach(i=>{ const k=i.category_name||"未分类"; (groups[k]=groups[k]||[]).push(i); });
+  if(!list.length){ empty.classList.remove("hidden"); cont.innerHTML=""; return; }
+  empty.classList.add("hidden");
+  let html="";
+  Object.keys(groups).sort().forEach(k=>{
+    html += `<div class="cat-h"><span>${esc(k)}</span><span>${groups[k].length}</span></div>`;
+    groups[k].forEach(i=>{
+      const badges = [];
+      if(i.archived) badges.push(`<span class="badge arch">已归档</span>`);
+      if(i.low_stock) badges.push(`<span class="badge low">需补充</span>`);
+      if(i.expired) badges.push(`<span class="badge exp">已过期</span>`);
+      else if(i.expiring_soon) badges.push(`<span class="badge exp">将过期</span>`);
+      html += `<div class="card">
+        <div class="info">
+          <div class="nm">${esc(i.name)}</div>
+          <div class="meta">${badges.join("")}${i.note?`<span>${esc(i.note)}</span>`:""}</div>
+          ${i.expiry_date?`<div class="meta">📅 ${esc(i.expiry_date)}</div>`:""}
+        </div>
+        <div class="qty"><div class="v" style="color:${i.low_stock?"var(--danger)":"var(--txt)"}">${fmt(i.quantity)}</div><div class="u">${esc(i.unit)}</div>
+          <div style="display:flex;gap:4px;justify-content:center;margin-top:2px;">
+            <button class="btnq minus" data-act="minus" data-id="${i.id}">−</button>
+            <button class="btnq plus" data-act="plus" data-id="${i.id}">+</button>
+          </div>
+        </div>
+        <div class="tools">
+          <button class="icon-btn" data-act="edit" data-id="${i.id}">✏️</button>
+          <button class="icon-btn" data-act="del" data-id="${i.id}">🗑️</button>
+        </div>
+      </div>`;
+    });
+  });
+  cont.innerHTML = html;
+  cont.querySelectorAll("[data-act]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const act=el.dataset.act, id=Number(el.dataset.id);
+      if(act==="plus") changeQty(id, +1);
+      else if(act==="minus") changeQty(id, -1);
+      else if(act==="edit") openItem(id);
+      else if(act==="del") delItem(id);
+    });
+  });
+}
+
+async function changeQty(id, delta){
+  try{
+    await api(`/items/${id}/quantity`, {method:"POST", body:JSON.stringify({delta})});
+    await load();
+  }catch(e){ toast("修改失败: "+e.message); }
+}
+async function delItem(id){
+  if(!confirm("删除该物品？")) return;
+  try{ await api(`/items/${id}`, {method:"DELETE"}); await load(); toast("已删除"); }
+  catch(e){ toast("删除失败: "+e.message); }
+}
+
+// ---- item form ----
+function fillCategorySelect(selected){
+  const sel = $("#f_category");
+  sel.innerHTML = `<option value="">未分类</option>` + state.categories.map(c=>
+    `<option value="${c.id}" ${c.id===selected?"selected":""}>${esc(c.name)}</option>`).join("");
+}
+function openItem(id){
+  state.editingId = id||null;
+  $("#itemTitle").textContent = id?"编辑物品":"新增物品";
+  fillCategorySelect();
+  if(id){
+    const i = state.items.find(x=>x.id===id);
+    $("#f_name").value=i.name; $("#f_quantity").value=i.quantity; $("#f_unit").value=i.unit;
+    $("#f_threshold").value=i.threshold; $("#f_expiry").value=i.expiry_date||""; $("#f_note").value=i.note||"";
+    $("#f_archived").checked=!!i.archived;
+    $("#f_category").value = i.category_id!=null?i.category_id:"";
+  } else {
+    $("#f_name").value=""; $("#f_quantity").value=0; $("#f_unit").value="盒";
+    $("#f_threshold").value=0; $("#f_expiry").value=""; $("#f_note").value=""; $("#f_archived").checked=false;
+  }
+  $("#itemOverlay").classList.add("show");
+}
+async function saveItem(){
+  const body = {
+    name: $("#f_name").value.trim(),
+    category_id: $("#f_category").value?Number($("#f_category").value):null,
+    quantity: Number($("#f_quantity").value||0),
+    unit: $("#f_unit").value.trim()||"个",
+    threshold: Number($("#f_threshold").value||0),
+    expiry_date: $("#f_expiry").value||null,
+    note: $("#f_note").value.trim()||null,
+    archived: $("#f_archived").checked,
+  };
+  if(!body.name){ toast("名称不能为空"); return; }
+  try{
+    if(state.editingId) await api(`/items/${state.editingId}`, {method:"PUT", body:JSON.stringify(body)});
+    else await api("/items", {method:"POST", body:JSON.stringify(body)});
+    $("#itemOverlay").classList.remove("show");
+    await load(); toast(state.editingId?"已更新":"已添加");
+  }catch(e){ toast("保存失败: "+e.message); }
+}
+
+// ---- categories ----
+function openCat(){ renderCatList(); $("#catOverlay").classList.add("show"); }
+function renderCatList(){
+  $("#cat_list").innerHTML = state.categories.map(c=>
+    `<div class="card" style="padding:10px 12px"><div style="flex:1">${esc(c.name)}</div>
+     <button class="icon-btn" data-cdel="${c.id}" style="color:var(--danger)">🗑️</button></div>`
+  ).join("") || `<div class="empty">暂无分类</div>`;
+  $$("#cat_list [data-cdel]").forEach(el=>el.onclick=async ()=>{
+    if(!confirm("删除该分类？该分类下的物品会变为“未分类”。")) return;
+    try{ await api(`/categories/${el.dataset.cdel}`,{method:"DELETE"}); await load(); renderCatList(); }
+    catch(e){ toast(e.message); }
+  });
+}
+
+// ---- event wiring ----
+$("#btnAdd").onclick=()=>openItem(null);
+$("#btnCat").onclick=openCat;
+$("#btnExport").onclick=()=>{ window.open("/api/export","_blank"); };
+$("#f_save").onclick=saveItem;
+$("#cat_add").onclick=async ()=>{
+  const name=$("#cat_new").value.trim(); if(!name) return;
+  try{ await api("/categories",{method:"POST",body:JSON.stringify({name})}); $("#cat_new").value=""; await load(); renderCatList(); }
+  catch(e){ toast(e.message); }
+};
+$$(".overlay").forEach(ov=>ov.addEventListener("click",e=>{ if(e.target===ov) ov.classList.remove("show"); }));
+$$("[data-close]").forEach(b=>b.onclick=()=>b.closest(".overlay").classList.remove("show"));
+$$("#tabs .tab").forEach(t=>t.onclick=()=>{ state.filter=t.dataset.f;
+  $$("#tabs .tab").forEach(x=>x.classList.toggle("on",x===t)); renderList(); });
+$("#metricbar").addEventListener("click",e=>{
+  const c=e.target.closest(".chip"); if(!c) return;
+  state.metric=c.dataset.m; renderMetrics();
+  // jump to relevant tab
+  if(state.metric==="low"){ state.filter="low"; setTab("low"); }
+  else if(state.metric==="expired"){ state.filter="expired"; setTab("expired"); }
+  else if(state.metric==="expiring"){ state.filter="expiring"; setTab("expiring"); }
+  renderList();
+});
+function setTab(f){ $$("#tabs .tab").forEach(t=>t.classList.toggle("on",t.dataset.f===f)); }
+$("#f_archived").onclick = () => {};
+
+load();
+</script>
+</body>
+</html>

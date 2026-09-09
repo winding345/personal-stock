@@ -1,0 +1,10 @@
+# 开发模式：挂载源码 + uvicorn --reload 热更新
+# 用法：docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+services:
+  stock:
+    # 挂载源码便于热更新（覆盖镜像内的 COPY）
+    volumes:
+      - ./app:/app/app
+      - ./data:/data
+    # 开发时用 reload 启动（会额外 watchfiles 监听，Python <3.13 下用 --reload）
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
