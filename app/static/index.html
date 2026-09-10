@@ -53,6 +53,15 @@ header{position:sticky;top:0;z-index:30;padding:calc(16px + env(safe-area-inset-
 .summary .exp b{color:var(--danger)}
 .summary .near b{color:var(--warn)}
 
+/* ---------- 排序 ---------- */
+.sortbar{display:flex;align-items:center;gap:8px;margin:0 4px 14px;overflow-x:auto;scrollbar-width:none}
+.sortbar::-webkit-scrollbar{display:none}
+.sortlab{font-size:12.5px;color:var(--muted);flex:0 0 auto}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:2px;flex:0 0 auto}
+.seg button{border:none;background:none;font:inherit;font-size:12.5px;color:var(--muted);padding:6px 13px;
+  border-radius:9px;cursor:pointer;white-space:nowrap;transition:.15s}
+.seg button.on{background:var(--accent-soft);color:var(--accent-dark);font-weight:500}
+
 /* ---------- 底部仓库栏（实底菜单栏） ---------- */
 .whbar{position:fixed;left:0;right:0;bottom:0;z-index:40;
   background:rgba(255,255,255,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
@@ -196,6 +205,17 @@ code{background:var(--card2);padding:1px 5px;border-radius:5px;font-size:12px}
       <input id="q" type="text" placeholder="搜索名称 / 备注…">
     </div>
     <div class="summary" id="summary"></div>
+    <div class="sortbar">
+      <span class="sortlab">排序</span>
+      <div class="seg" id="sortField">
+        <button data-f="name">名称</button>
+        <button data-f="expiry">有效期</button>
+      </div>
+      <div class="seg" id="sortDir">
+        <button data-d="1">正序</button>
+        <button data-d="-1">倒序</button>
+      </div>
+    </div>
   </header>
 
   <main id="list"></main>
@@ -255,7 +275,8 @@ code{background:var(--card2);padding:1px 5px;border-radius:5px;font-size:12px}
 
 <script>
 const state={items:[],categories:[],filter:"all",cat:0,q:"",editingId:null,
-  pendingPhoto:null,removePhoto:false,pulseId:null};
+  pendingPhoto:null,removePhoto:false,pulseId:null,
+  sortField:(localStorage.getItem("sortField")||"name"),sortDir:Number(localStorage.getItem("sortDir")||1)};
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>Number(n).toLocaleString("zh-CN",{maximumFractionDigits:2});
@@ -326,7 +347,8 @@ function render(){
     <span class="near ${state.filter==='expiring'?'on':''}" data-f="expiring">临期数量<b>${near}</b></span>`;
   $$("#summary span").forEach(s=>s.onclick=()=>{state.filter=s.dataset.f;render()});
   renderWhTabs();
-  const lv=visible();const empty=$("#empty");
+  renderSort();
+  const lv=sortList(visible());const empty=$("#empty");
   if(!lv.length){empty.classList.remove("hidden");empty.innerHTML=`<div class="e">📭</div><p>没有符合条件的物品</p><p style="font-size:12.5px;color:var(--muted)">点右下角 ＋ 添加，或换个筛选条件</p>`;$("#list").innerHTML="";return}
   empty.classList.add("hidden");let html=`<div class="grid">`;
   lv.forEach((i,idx)=>{
@@ -468,6 +490,31 @@ function openWhCreate(){
   $("#whOverlay").classList.add("show");
   setTimeout(()=>$("#wh_name").focus(),160);
 }
+
+/* ---- 排序：名称 / 有效期 × 正序 / 倒序 ---- */
+function sortList(l){
+  const zhCmp=(a,b)=>a.name.localeCompare(b.name,"zh");
+  if(state.sortField==="expiry"){
+    const has=l.filter(i=>i.expiry_date).sort((a,b)=>(
+      a.expiry_date<b.expiry_date?-1:a.expiry_date>b.expiry_date?1:0)||zhCmp(a,b));
+    const none=l.filter(i=>!i.expiry_date).sort(zhCmp);   // 无有效期永远排最后
+    if(state.sortDir<0)has.reverse();
+    return [...has,...none];
+  }
+  const out=[...l].sort(zhCmp);
+  if(state.sortDir<0)out.reverse();
+  return out;
+}
+function renderSort(){
+  $$("#sortField button").forEach(b=>b.classList.toggle("on",b.dataset.f===state.sortField));
+  $$("#sortDir button").forEach(b=>b.classList.toggle("on",Number(b.dataset.d)===state.sortDir));
+}
+$$("#sortField button").forEach(b=>b.onclick=()=>{
+  state.sortField=b.dataset.f;localStorage.setItem("sortField",state.sortField);render();
+});
+$$("#sortDir button").forEach(b=>b.onclick=()=>{
+  state.sortDir=Number(b.dataset.d);localStorage.setItem("sortDir",state.sortDir);render();
+});
 
 $("#btnAdd").onclick=()=>openItem(null);
 $("#f_save").onclick=saveItem;
