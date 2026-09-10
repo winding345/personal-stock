@@ -6,12 +6,12 @@ import json
 import sqlite3
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from .db import get_conn, init_db, now_iso, today_str
+from .db import IMAGES_DIR, get_conn, init_db, now_iso, today_str
 from .schemas import CategoryIn, CategoryOut, ItemIn, ItemOut, QuantityDelta
 
 app = FastAPI(title="Personal Stock", version="0.1.0")
@@ -24,6 +24,8 @@ app.add_middleware(
 )
 
 STATIC_DIR = Path(__file__).parent / "static"
+MAX_IMAGE_BYTES = 6 * 1024 * 1024  # 6MB
+ALLOWED_IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 
 
 @app.on_event("startup")
@@ -62,6 +64,7 @@ def _row_item_to_out(row: sqlite3.Row) -> ItemOut:
         expiry_date=d["expiry_date"],
         note=d["note"],
         archived=bool(d["archived"]),
+        image=d["image"] if "image" in d.keys() else None,
         low_stock=flags["low_stock"],
         expired=flags["expired"],
         expiring_soon=flags["expiring_soon"],
@@ -210,7 +213,60 @@ def delete_item(item_id: int):
         conn.commit()
         if cur.rowcount == 0:
             raise HTTPException(status_code=404, detail="物品不存在")
+        _remove_images(item_id)   # 同时清掉该物品的照片
         return {"ok": True}
+    finally:
+        conn.close()
+
+
+# ---------------- item image（包装图/照片） ----------------
+
+def _remove_images(item_id: int) -> None:
+    for p in IMAGES_DIR.glob(f"{item_id}.*"):
+        try:
+            p.unlink()
+        except OSError:
+            pass
+
+
+@app.post("/api/items/{item_id}/image", response_model=ItemOut)
+async def upload_image(item_id: int, file: UploadFile = File(...)):
+    """上传物品照片（前端已压缩成小图）；作为卡片图标。"""
+    conn = get_conn()
+    try:
+        _get_item_or_404(conn, item_id)
+        ext = Path(file.filename or "").suffix.lower()
+        if ext not in ALLOWED_IMAGE_EXT:
+            ext = ".jpg"
+        data = await file.read()
+        if not data:
+            raise HTTPException(status_code=400, detail="空文件")
+        if len(data) > MAX_IMAGE_BYTES:
+            raise HTTPException(status_code=413, detail="图片过大（上限 6MB）")
+        _remove_images(item_id)  # 覆盖旧图
+        dest = IMAGES_DIR / f"{item_id}{ext}"
+        dest.write_bytes(data)
+        url = f"/images/{dest.name}"
+        conn.execute("UPDATE items SET image=?, updated_at=? WHERE id=?",
+                     (url, now_iso(), item_id))
+        conn.commit()
+        row = conn.execute(_ITEM_SELECT + " WHERE i.id = ?", (item_id,)).fetchone()
+        return _row_item_to_out(row)
+    finally:
+        conn.close()
+
+
+@app.delete("/api/items/{item_id}/image", response_model=ItemOut)
+def delete_image(item_id: int):
+    conn = get_conn()
+    try:
+        _get_item_or_404(conn, item_id)
+        _remove_images(item_id)
+        conn.execute("UPDATE items SET image=NULL, updated_at=? WHERE id=?",
+                     (now_iso(), item_id))
+        conn.commit()
+        row = conn.execute(_ITEM_SELECT + " WHERE i.id = ?", (item_id,)).fetchone()
+        return _row_item_to_out(row)
     finally:
         conn.close()
 
@@ -299,6 +355,9 @@ def stats():
 # ---------------- SPA ----------------
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+# 物品照片（持久化在 /data/images）
+IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/images", StaticFiles(directory=IMAGES_DIR), name="images")
 
 
 @app.get("/", response_class=HTMLResponse)

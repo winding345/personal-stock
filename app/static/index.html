@@ -74,31 +74,42 @@ header{position:sticky;top:0;z-index:30;padding:calc(16px + env(safe-area-inset-
 .sec{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 10px}
 .sec h3{margin:0;font-size:13.5px;color:var(--muted);font-weight:500;letter-spacing:.2px}
 .sec .n{font-size:12.5px;color:#b3bcc6}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
 @media(min-width:600px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}}
 .gcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);
-  padding:18px 14px 14px;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;
-  text-align:center;cursor:pointer;animation:up .32s both;transition:transform .15s,box-shadow .15s}
-.gcard:active{transform:scale(.98)}
+  padding:14px 12px 12px;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;
+  text-align:center;cursor:pointer;animation:up .32s both;transition:transform .15s,box-shadow .15s,border-color .2s}
+.gcard:active{transform:scale(.975)}
 .gcard.need{border-color:#f7d0d0}
 .gcard.exp{border-color:#f7e3c2}
 @keyframes up{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-.gic{width:52px;height:52px;border-radius:16px;background:var(--accent);color:#fff;display:grid;place-items:center;margin-bottom:11px}
-.gic .icn{width:27px;height:27px}
-.gnm{font-size:14.5px;font-weight:500;line-height:1.35;width:100%;height:2.7em;overflow:hidden;
+.gic{width:46px;height:46px;border-radius:14px;background:var(--accent);color:#fff;display:grid;place-items:center;margin-bottom:8px}
+.gic .icn{width:24px;height:24px}
+.gimg{width:100%;height:84px;border-radius:13px;overflow:hidden;margin-bottom:8px;background:var(--card2)}
+.gimg img{width:100%;height:100%;object-fit:cover;display:block}
+.gnm{font-size:14px;font-weight:500;line-height:1.32;width:100%;height:2.64em;overflow:hidden;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
-.gqty{margin-top:9px;display:flex;align-items:baseline;gap:3px;justify-content:center}
-.gqty b{font-size:23px;font-weight:600;line-height:1;letter-spacing:-.5px}
-.gqty span{font-size:11.5px;color:var(--muted)}
-.gdue{font-size:11.5px;color:#a6b0ba;margin-top:5px}
+.gqty{margin-top:7px;display:flex;align-items:baseline;gap:3px;justify-content:center}
+.gqty b{font-size:20px;font-weight:600;line-height:1;letter-spacing:-.4px;display:inline-block}
+.gqty span{font-size:11px;color:var(--muted)}
+.gdue{font-size:11px;color:#a6b0ba;margin-top:4px}
 .gdue.bad{color:var(--danger)} .gdue.warn{color:var(--warn)}
-.gpill{font-size:10.5px;padding:2px 9px;border-radius:999px;margin-top:6px;font-weight:500}
+.gpill{font-size:10.5px;padding:2px 9px;border-radius:999px;margin-top:5px;font-weight:500}
 .gpill.danger{background:var(--danger-soft);color:var(--danger)}
 .gpill.warn{background:var(--warn-soft);color:var(--warn)}
 .gpill.arch{background:#eef1f4;color:var(--muted)}
-.gstep{display:flex;gap:9px;margin-top:11px;width:100%}
-.sbtn{height:32px;flex:1;border-radius:11px;background:var(--card2);border:1px solid var(--line);
-  color:var(--txt);font-size:16px;font-weight:600;cursor:pointer;line-height:1;transition:.1s}
+.gstep{display:flex;gap:8px;margin-top:9px;width:100%}
+/* 微交互：数量跳动 / 卡片脉冲 */
+@keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.28)}70%{transform:scale(.94)}100%{transform:scale(1)}}
+.gqty b.pop{animation:pop .42s cubic-bezier(.34,1.56,.64,1)}
+@keyframes cardpulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.42)}100%{box-shadow:0 0 0 14px rgba(34,197,94,0)}}
+.gcard.pulse{animation:cardpulse .5s ease-out}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.16)}100%{transform:scale(1)}}
+.s.bumped .b{animation:bump .4s cubic-bezier(.34,1.56,.64,1)}
+.sbtn{height:30px;flex:1;border-radius:10px;background:var(--card2);border:1px solid var(--line);
+  color:var(--txt);font-size:16px;font-weight:600;cursor:pointer;line-height:1;transition:transform .1s,background .15s}
+.sbtn:hover{background:#f0f4f2}
 .sbtn:active{transform:scale(.93)}
 .sbtn.m{color:var(--danger)} .sbtn.p{color:var(--accent-dark)}
 .trash{position:absolute;top:8px;right:8px;background:none;border:none;color:#c7ced6;cursor:pointer;padding:3px;transition:.2s}
@@ -139,6 +150,13 @@ header{position:sticky;top:0;z-index:30;padding:calc(16px + env(safe-area-inset-
   box-shadow:0 8px 22px rgba(34,197,94,.28);font-family:inherit}
 .check{display:flex;align-items:center;gap:9px}
 .check input{width:auto}
+.photo{display:flex;gap:12px;align-items:center}
+.pv{width:74px;height:74px;border-radius:14px;background:var(--card2);border:1px dashed var(--line);display:grid;place-items:center;overflow:hidden;flex:0 0 auto}
+.pv img{width:100%;height:100%;object-fit:cover}
+.pv span{font-size:11px;color:#b3bcc6}
+.pbtns{display:flex;flex-direction:column;gap:8px}
+.pbtn{display:block;padding:9px 15px;border-radius:11px;background:var(--card2);border:1px solid var(--line);font-size:13px;cursor:pointer;text-align:center;color:var(--txt)}
+.pbtn.rm{color:var(--danger)}
 .catrow{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;box-shadow:var(--sh)}
 .catrow .gic{width:40px;height:40px;border-radius:13px;margin:0}
 .catrow .gic .icn{width:21px;height:21px}
@@ -214,6 +232,17 @@ code{background:var(--card2);padding:1px 5px;border-radius:5px;font-size:12px}
       <div class="field"><label>有效期</label><input id="f_expiry" type="date"></div>
     </div>
     <div class="field"><label>备注</label><textarea id="f_note" rows="2"></textarea></div>
+    <div class="field">
+      <label>包装图 / 照片（拍药盒即可）</label>
+      <div class="photo">
+        <div class="pv" id="pv"><span>未设置</span></div>
+        <div class="pbtns">
+          <label class="pbtn" for="f_photo">📷 选择照片</label>
+          <input id="f_photo" type="file" accept="image/*" style="display:none">
+          <button class="pbtn rm" id="f_photo_rm" type="button">移除</button>
+        </div>
+      </div>
+    </div>
     <div class="field check"><input type="checkbox" id="f_archived"><label for="f_archived" style="margin:0">设为已归档</label></div>
     <button class="save" id="f_save">保存</button>
   </div>
@@ -244,7 +273,8 @@ code{background:var(--card2);padding:1px 5px;border-radius:5px;font-size:12px}
 <div class="toast" id="toast"></div>
 
 <script>
-const state={items:[],categories:[],filter:"all",cat:0,q:"",editingId:null};
+const state={items:[],categories:[],filter:"all",cat:0,q:"",editingId:null,
+  pendingPhoto:null,removePhoto:false,pulseId:null,prevCounts:null};
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>Number(n).toLocaleString("zh-CN",{maximumFractionDigits:2});
@@ -292,6 +322,11 @@ function render(){
     <div class="s exp ${state.filter==='expired'?'on':''}" data-f="expired"><div class="b">${exp}</div><div class="l">已过期</div><div class="d"></div></div>
     <div class="s near ${state.filter==='expiring'?'on':''}" data-f="expiring"><div class="b">${near}</div><div class="l">将过期</div><div class="d"></div></div>`;
   $$("#stats .s").forEach(s=>s.onclick=()=>{state.filter=s.dataset.f;render()});
+  // 统计变化时轻微跳动
+  const cur={all:pct,low,exp,near};
+  $$("#stats .s").forEach(el=>{const f=el.dataset.f;
+    if(state.prevCounts&&state.prevCounts[f]!==undefined&&state.prevCounts[f]!==cur[f])el.classList.add("bumped")});
+  state.prevCounts=cur;
   const cc=[{id:0,name:"全部",em:"🗂️"}].concat(state.categories.map(c=>({id:c.id,name:c.name,em:cemo(c.name)})));
   $("#cats").innerHTML=cc.map(c=>`<div class="catc ${state.cat===c.id?'on':''}" data-c="${c.id}"><span class="em">${c.em}</span>${esc(c.name)}</div>`).join("");
   $$("#cats .catc").forEach(el=>el.onclick=()=>{state.cat=Number(el.dataset.c);render()});
@@ -312,13 +347,15 @@ function render(){
       const due=i.expiry_date
         ? `<div class="gdue ${i.expired?'bad':(i.expiring_soon?'warn':'')}">效期 ${esc(i.expiry_date)}</div>`
         : `<div class="gdue">无有效期</div>`;
-      html+=`<div class="gcard ${need?'need':''} ${expired?'exp':''}" data-id="${i.id}"
+      html+=`<div class="gcard ${need?'need':''} ${expired?'exp':''} ${i.id===state.pulseId?'pulse':''}" data-id="${i.id}"
           title="${esc(i.name)}${i.note?' · '+esc(i.note):''}"
           style="animation-delay:${Math.min(idx*14,200)}ms">
         <button class="trash" data-del="${i.id}"><svg class="icn"><use href="#i-trash"/></svg></button>
-        <div class="gic"><svg class="icn"><use href="#i-${iconFor(i.name)}"/></svg></div>
+        ${i.image
+          ? `<div class="gimg"><img src="${esc(i.image)}" alt="" loading="lazy"></div>`
+          : `<div class="gic"><svg class="icn"><use href="#i-${iconFor(i.name)}"/></svg></div>`}
         <div class="gnm">${esc(i.name)}</div>
-        <div class="gqty"><b style="color:${i.low_stock?'var(--danger)':'var(--txt)'}">${fmt(i.quantity)}</b><span>${esc(i.unit)}</span></div>
+        <div class="gqty"><b class="${i.id===state.pulseId?'pop':''}" style="color:${i.low_stock?'var(--danger)':'var(--txt)'}">${fmt(i.quantity)}</b><span>${esc(i.unit)}</span></div>
         ${due}${tag}
         <div class="gstep">
           <button class="sbtn m" data-q="-1" data-id="${i.id}">−</button>
@@ -332,21 +369,58 @@ function render(){
   $$(".gcard[data-id]").forEach(el=>el.onclick=()=>openItem(Number(el.dataset.id)));
   $$(".sbtn").forEach(b=>b.onclick=async e=>{e.stopPropagation();const id=Number(b.dataset.id);const d=Number(b.dataset.q);await change(id,d)});
   $$(".trash").forEach(b=>b.onclick=async e=>{e.stopPropagation();if(confirm("删除该物品？")){try{await api(`/items/${b.dataset.del}`,{method:"DELETE"});await load();toast("已删除")}catch(err){toast(err.message)}}});
+  if(state.pulseId){const pid=state.pulseId;setTimeout(()=>{if(state.pulseId===pid)state.pulseId=null},620)}
 }
-async function change(id,delta){try{await api(`/items/${id}/quantity`,{method:"POST",body:JSON.stringify({delta})});await load()}catch(e){toast("修改失败: "+e.message)}}
+async function change(id,delta){
+  state.pulseId=id;
+  try{await api(`/items/${id}/quantity`,{method:"POST",body:JSON.stringify({delta})});await load()}
+  catch(e){state.pulseId=null;toast("修改失败: "+e.message)}
+}
+
+/* ---- 照片：前端压缩后上传 ---- */
+function shrink(file,max=720,q=.85){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);const img=new Image();
+    img.onload=()=>{
+      const s=Math.min(1,max/Math.max(img.width,img.height));
+      const w=Math.round(img.width*s),h=Math.round(img.height*s);
+      const c=document.createElement("canvas");c.width=w;c.height=h;
+      c.getContext("2d").drawImage(img,0,0,w,h);URL.revokeObjectURL(url);
+      c.toBlob(b=>b?resolve(b):reject(new Error("压缩失败")),"image/jpeg",q);
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("无法读取图片"))};
+    img.src=url;
+  });
+}
+async function uploadPhoto(id,blob){
+  const fd=new FormData();fd.append("file",blob,"photo.jpg");
+  const r=await fetch(`/api/items/${id}/image`,{method:"POST",body:fd});
+  if(!r.ok){let d="上传失败";try{const j=await r.json();if(j.detail)d=j.detail}catch(e){};throw new Error(d)}
+  return r.json();
+}
+function setPhotoPreview(url){$("#pv").innerHTML=url?`<img src="${esc(url)}" alt="">`:`<span>未设置</span>`}
 
 function fillCat(sel){const s=$("#f_category");s.innerHTML=`<option value="">未分类</option>`+state.categories.map(c=>`<option value="${c.id}" ${c.id===sel?"selected":""}>${esc(c.name)}</option>`).join("")}
-function openItem(id){state.editingId=id||null;$("#itemTitle").textContent=id?"编辑物品":"新增物品";fillCat();
+function openItem(id){state.editingId=id||null;state.pendingPhoto=null;state.removePhoto=false;
+  $("#itemTitle").textContent=id?"编辑物品":"新增物品";fillCat();
   if(id){const i=state.items.find(x=>x.id===id);$("#f_name").value=i.name;$("#f_quantity").value=i.quantity;$("#f_unit").value=i.unit;
-    $("#f_threshold").value=i.threshold;$("#f_expiry").value=i.expiry_date||"";$("#f_note").value=i.note||"";$("#f_archived").checked=!!i.archived;$("#f_category").value=i.category_id!=null?i.category_id:""}
-  else{$("#f_name").value="";$("#f_quantity").value=0;$("#f_unit").value="盒";$("#f_threshold").value=0;$("#f_expiry").value="";$("#f_note").value="";$("#f_archived").checked=false}
+    $("#f_threshold").value=i.threshold;$("#f_expiry").value=i.expiry_date||"";$("#f_note").value=i.note||"";$("#f_archived").checked=!!i.archived;$("#f_category").value=i.category_id!=null?i.category_id:"";
+    setPhotoPreview(i.image||null)}
+  else{$("#f_name").value="";$("#f_quantity").value=0;$("#f_unit").value="盒";$("#f_threshold").value=0;$("#f_expiry").value="";$("#f_note").value="";$("#f_archived").checked=false;
+    setPhotoPreview(null)}
   $("#itemOverlay").classList.add("show")}
 async function saveItem(){const b={name:$("#f_name").value.trim(),category_id:$("#f_category").value?Number($("#f_category").value):null,
   quantity:Number($("#f_quantity").value||0),unit:$("#f_unit").value.trim()||"个",threshold:Number($("#f_threshold").value||0),
   expiry_date:$("#f_expiry").value||null,note:$("#f_note").value.trim()||null,archived:$("#f_archived").checked};
   if(!b.name){toast("名称不能为空");return}
-  try{if(state.editingId)await api(`/items/${state.editingId}`,{method:"PUT",body:JSON.stringify(b)});else await api("/items",{method:"POST",body:JSON.stringify(b)});
-    $("#itemOverlay").classList.remove("show");await load();toast(state.editingId?"已更新":"已添加")}catch(e){toast("保存失败: "+e.message)}}
+  try{
+    let id=state.editingId;
+    if(id){await api(`/items/${id}`,{method:"PUT",body:JSON.stringify(b)})}
+    else{const created=await api("/items",{method:"POST",body:JSON.stringify(b)});id=created.id}
+    if(state.pendingPhoto){await uploadPhoto(id,state.pendingPhoto)}
+    else if(state.removePhoto&&state.editingId){await api(`/items/${id}/image`,{method:"DELETE"})}
+    $("#itemOverlay").classList.remove("show");await load();toast(state.editingId?"已更新":"已添加")
+  }catch(e){toast("保存失败: "+e.message)}}
 
 function renderCatList(){
   $("#cat_list").innerHTML=state.categories.map(c=>`<div class="catrow"><div class="gic"><svg class="icn"><use href="#i-box"/></svg></div><div style="flex:1;font-weight:500">${esc(c.name)}</div><button class="trash" style="position:static" data-cdel="${c.id}"><svg class="icn"><use href="#i-trash"/></svg></button></div>`).join("")
@@ -357,6 +431,13 @@ $("#btnAdd").onclick=()=>openItem(null);
 $("#btnInfo").onclick=()=>$("#infoOverlay").classList.add("show");
 $("#btnExport").onclick=()=>window.open("/api/export","_blank");
 $("#f_save").onclick=saveItem;
+$("#f_photo").addEventListener("change",async e=>{
+  const f=e.target.files&&e.target.files[0];if(!f)return;
+  try{const blob=await shrink(f,720,.85);state.pendingPhoto=blob;state.removePhoto=false;setPhotoPreview(URL.createObjectURL(blob))}
+  catch(err){toast("图片处理失败: "+err.message)}
+  e.target.value="";
+});
+$("#f_photo_rm").onclick=()=>{state.pendingPhoto=null;state.removePhoto=true;setPhotoPreview(null)};
 $("#cat_add").onclick=async()=>{const n=$("#cat_new").value.trim();if(!n)return;try{await api("/categories",{method:"POST",body:JSON.stringify({name:n})});$("#cat_new").value="";await load();renderCatList()}catch(e){toast(e.message)}};
 $$(".overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("show")}));
 $$("[data-close]").forEach(b=>b.onclick=()=>b.closest(".overlay").classList.remove("show"));

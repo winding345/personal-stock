@@ -37,6 +37,7 @@ class ItemOut(BaseModel):
     expiry_date: Optional[str] = None
     note: Optional[str] = None
     archived: bool
+    image: Optional[str] = None
     low_stock: bool
     expired: bool
     expiring_soon: bool

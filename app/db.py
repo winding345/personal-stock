@@ -7,10 +7,12 @@ import sqlite3
 from pathlib import Path
 
 DB_PATH = Path(os.environ.get("STOCK_DB_PATH", "/data/stock.db"))
+IMAGES_DIR = Path(os.environ.get("STOCK_IMAGES_DIR", "/data/images"))
 
 
 def _ensure_parent() -> None:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def get_conn() -> sqlite3.Connection:
@@ -55,6 +57,10 @@ def init_db() -> None:
             CREATE INDEX IF NOT EXISTS idx_items_archived ON items(archived);
             """
         )
+        # 轻量迁移：老库补 image 列
+        cols = {r["name"] for r in conn.execute("PRAGMA table_info(items)").fetchall()}
+        if "image" not in cols:
+            conn.execute("ALTER TABLE items ADD COLUMN image TEXT")
         conn.commit()
     finally:
         conn.close()
