@@ -207,13 +207,13 @@ code{background:var(--card2);padding:1px 5px;border-radius:5px;font-size:12px}
 </div>
 <button class="fab" id="btnAdd" title="添加物品">＋</button>
 
-<!-- 仓库管理面板（长按 Tab 打开） -->
+<!-- 仓库面板（新建 / 编辑，长按 Tab 打开） -->
 <div class="overlay" id="whOverlay">
   <div class="sheet">
     <h2><span id="whTitle">仓库</span><button class="x" data-close>✕</button></h2>
     <div class="field"><label>仓库名称</label><input id="wh_name" type="text" placeholder="如 药箱 / 冰箱 / 工具箱"></div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
-      <button class="save" id="wh_save">保存名称</button>
+    <button class="save" id="wh_save"><span id="wh_save_label">保存名称</span></button>
+    <div id="whManageOnly" style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
       <button class="save alt" id="wh_export">⬇ 导出这个仓库</button>
       <button class="save del" id="wh_del">🗑 删除这个仓库</button>
     </div>
@@ -441,29 +441,31 @@ function renderWhTabs(){
     el.addEventListener("contextmenu",e=>{e.preventDefault();openWhPanel(id)});
   });
   const add=document.getElementById("whAddTab");
-  if(add)add.onclick=()=>newWarehouse();
+  if(add)add.onclick=()=>openWhCreate();
   const act=box.querySelector(".whtab.on");
   if(act&&act.scrollIntoView)act.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"});
 }
 
-/* ---- 仓库管理面板 ---- */
-let whPanelId=null;
+/* ---- 仓库面板：新建 / 编辑 ---- */
+let whPanelId=null, whMode="edit";
 function openWhPanel(id){
   const c=state.categories.find(x=>x.id===id);if(!c)return;
-  whPanelId=id;
+  whMode="edit";whPanelId=id;
   $("#whTitle").textContent=c.name;
   $("#wh_name").value=c.name;
+  $("#wh_save_label").textContent="保存名称";
+  $("#whManageOnly").style.display="flex";
   $("#whOverlay").classList.add("show");
+  setTimeout(()=>$("#wh_name").select(),160);
 }
-async function newWarehouse(){
-  const name=prompt("新建仓库名称（如 冰箱 / 工具箱）");
-  if(!name||!name.trim())return;
-  try{
-    const c=await api("/categories",{method:"POST",body:JSON.stringify({name:name.trim()})});
-    await load();
-    state.cat=c.id;state.filter="all";setUrl(c.id);render();
-    toast("已新建："+c.name);
-  }catch(e){toast(e.message)}
+function openWhCreate(){
+  whMode="create";whPanelId=null;
+  $("#whTitle").textContent="新建仓库";
+  $("#wh_name").value="";
+  $("#wh_save_label").textContent="创建仓库";
+  $("#whManageOnly").style.display="none";
+  $("#whOverlay").classList.add("show");
+  setTimeout(()=>$("#wh_name").focus(),160);
 }
 
 $("#btnAdd").onclick=()=>openItem(null);
@@ -478,12 +480,21 @@ $("#f_photo_rm").onclick=()=>{state.pendingPhoto=null;state.removePhoto=true;set
 
 $("#wh_save").onclick=async()=>{
   const n=$("#wh_name").value.trim();
-  if(!n){toast("名称不能为空");return}
+  if(!n){toast("名称不能为空");$("#wh_name").focus();return}
   try{
-    await api(`/categories/${whPanelId}`,{method:"PATCH",body:JSON.stringify({name:n,sort_order:0})});
-    $("#whOverlay").classList.remove("show");await load();toast("已重命名");
-  }catch(e){toast("重命名失败: "+e.message)}
+    if(whMode==="create"){
+      const c=await api("/categories",{method:"POST",body:JSON.stringify({name:n})});
+      $("#whOverlay").classList.remove("show");
+      await load();
+      state.cat=c.id;state.filter="all";setUrl(c.id);render();
+      toast("已新建："+c.name);
+    }else{
+      await api(`/categories/${whPanelId}`,{method:"PATCH",body:JSON.stringify({name:n,sort_order:0})});
+      $("#whOverlay").classList.remove("show");await load();toast("已重命名");
+    }
+  }catch(e){toast((whMode==="create"?"创建失败: ":"重命名失败: ")+e.message)}
 };
+$("#wh_name").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#wh_save").click()}});
 $("#wh_export").onclick=()=>{window.open(`/api/export?category_id=${whPanelId}`,"_blank")};
 $("#wh_del").onclick=async()=>{
   const c=state.categories.find(x=>x.id===whPanelId);
