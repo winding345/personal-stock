@@ -1,6 +1,5 @@
 # 同类项目调研（个人库存 / 药箱 / 保质期）
 
-> 截图：`docs/research/ui-references/*.png`（Playwright 实拍 demo 页面，2026-09）。
 > star 数为调研时实时值。
 
 ## 开源项目
