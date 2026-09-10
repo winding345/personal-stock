@@ -304,6 +304,28 @@ def create_category(body: CategoryIn):
         conn.close()
 
 
+@app.patch("/api/categories/{cat_id}", response_model=CategoryOut)
+def update_category(cat_id: int, body: CategoryIn):
+    """重命名仓库。"""
+    conn = get_conn()
+    try:
+        row = conn.execute("SELECT * FROM categories WHERE id=?", (cat_id,)).fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="仓库不存在")
+        try:
+            conn.execute(
+                "UPDATE categories SET name=?, sort_order=?, updated_at=? WHERE id=?",
+                (body.name.strip(), body.sort_order, now_iso(), cat_id),
+            )
+            conn.commit()
+        except sqlite3.IntegrityError:
+            raise HTTPException(status_code=409, detail="名称已存在")
+        row = conn.execute("SELECT * FROM categories WHERE id=?", (cat_id,)).fetchone()
+        return CategoryOut(**dict(row))
+    finally:
+        conn.close()
+
+
 @app.delete("/api/categories/{cat_id}")
 def delete_category(cat_id: int):
     conn = get_conn()
@@ -318,17 +340,30 @@ def delete_category(cat_id: int):
 # ---------------- misc ----------------
 
 @app.get("/api/export")
-def export_json():
-    """导出全量数据为 JSON，便于备份/迁移。"""
+def export_json(category_id: int | None = None):
+    """导出 JSON。category_id 给定则只导出该仓库（含其物品）。"""
     conn = get_conn()
     try:
-        cats = [dict(r) for r in conn.execute("SELECT * FROM categories").fetchall()]
-        items = [dict(r) for r in conn.execute("SELECT * FROM items").fetchall()]
-        payload = {"exported_at": now_iso(), "categories": cats, "items": items}
+        if category_id is not None:
+            cats = [dict(r) for r in conn.execute(
+                "SELECT * FROM categories WHERE id=?", (category_id,)).fetchall()]
+            items = [dict(r) for r in conn.execute(
+                "SELECT * FROM items WHERE category_id=?", (category_id,)).fetchall()]
+            if not cats and not items:
+                raise HTTPException(status_code=404, detail="仓库不存在")
+            name = cats[0]["name"] if cats else f"warehouse-{category_id}"
+            fname = f"stock_{category_id}.json"
+        else:
+            cats = [dict(r) for r in conn.execute("SELECT * FROM categories").fetchall()]
+            items = [dict(r) for r in conn.execute("SELECT * FROM items").fetchall()]
+            name = "all"
+            fname = "stock_all.json"
+        payload = {"exported_at": now_iso(), "scope": name,
+                   "categories": cats, "items": items}
         return Response(
             content=json.dumps(payload, ensure_ascii=False, indent=2),
             media_type="application/json",
-            headers={"Content-Disposition": 'attachment; filename="stock_backup.json"'},
+            headers={"Content-Disposition": f'attachment; filename="{fname}"'},
         )
     finally:
         conn.close()
@@ -362,4 +397,10 @@ app.mount("/images", StaticFiles(directory=IMAGES_DIR), name="images")
 
 @app.get("/", response_class=HTMLResponse)
 def index() -> str:
+    return (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+
+
+@app.get("/w/{cat_id}", response_class=HTMLResponse)
+def index_warehouse(cat_id: int) -> str:
+    """仓库直达 URL（如 /w/1）：仍返回 SPA，由前端按路径切换仓库。"""
     return (STATIC_DIR / "index.html").read_text(encoding="utf-8")
