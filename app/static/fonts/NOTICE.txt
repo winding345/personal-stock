@@ -1,0 +1,16 @@
+Poppins 字体许可说明
+=====================
+
+本目录下的 poppins-*.woff2 为 Poppins 字体的 latin 子集（woff2 格式）。
+
+- 字体名称: Poppins
+- 设计者: Indian Type Foundry (Jonny Pinhorn, Ninad Kale)
+- 许可证: SIL Open Font License, Version 1.1 (OFL-1.1)
+- 许可证全文: https://scripts.sil.org/OFL
+- 来源: https://fonts.google.com/specimen/Poppins
+
+OFL-1.1 允许自由使用、修改、再分发（包括随商业/开源项目打包），
+要求保留本许可声明，且不得单独售卖字体本身。
+
+本仓库仅打包 latin 子集（数字/英文字母），中文由系统字体（PingFang SC /
+HarmonyOS Sans SC / MiSans / Noto Sans SC / Microsoft YaHei）回退渲染。

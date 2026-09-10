@@ -5,165 +5,185 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>个人库存记录</title>
 <style>
+/* ---------- 自托管字体 (Poppins, latin 子集, OFL) ---------- */
+@font-face{font-family:'Poppins';font-style:normal;font-weight:400;font-display:swap;src:url('/static/fonts/poppins-400.woff2') format('woff2');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:500;font-display:swap;src:url('/static/fonts/poppins-500.woff2') format('woff2');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:600;font-display:swap;src:url('/static/fonts/poppins-600.woff2') format('woff2');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:700;font-display:swap;src:url('/static/fonts/poppins-700.woff2') format('woff2');}
+
 :root{
-  --bg:#f4f6f8; --card:#ffffff; --card2:#fafbfc; --line:#e9edf1;
-  --txt:#1f2937; --muted:#8a93a3;
-  --accent:#22c55e; --accent-soft:#e9f9f0;
-  --danger:#ef4444; --danger-soft:#fdecec; --warn:#f59e0b; --warn-soft:#fdf3e2; --ok:#10b981; --ok-soft:#e7f7f1;
-  --r:16px; --sh:0 1px 2px rgba(16,24,40,.05), 0 6px 16px rgba(16,24,40,.06);
-  --sb-h:56px;
+  --bg:#f5f7f6; --card:#ffffff; --card2:#f7f9f8; --line:#e8ecea;
+  --txt:#1f2937; --muted:#8b95a1;
+  --accent:#22c55e; --accent-dark:#16a34a; --accent-soft:#e9f9f0;
+  --danger:#ef4444; --danger-soft:#fdecec; --warn:#f59e0b; --warn-soft:#fdf4e3;
+  --r:20px; --sh:0 1px 2px rgba(16,24,40,.04), 0 8px 22px rgba(16,24,40,.05);
+  --sb-h:58px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
 body{color:var(--txt);background:var(--bg);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
-  min-height:100%;padding:0 0 calc(var(--sb-h) + 100px);}
-.max{max-width:720px;margin:0 auto;padding:0 14px}
+  font-family:'Poppins',-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","HarmonyOS Sans SC","MiSans","Noto Sans SC","Microsoft YaHei",sans-serif;
+  min-height:100%;padding:0 0 calc(var(--sb-h) + 104px);-webkit-font-smoothing:antialiased}
+.max{max-width:760px;margin:0 auto;padding:0 16px}
+
+/* ---------- 图标 ---------- */
+.icn{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;display:block}
 
 /* ---------- header ---------- */
-header{position:sticky;top:0;z-index:30;padding:calc(14px + env(safe-area-inset-top)) 0 10px;
-  background:linear-gradient(180deg,var(--bg) 78%, rgba(244,246,248,0));}
-.hero{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 2px 12px;}
-.hero .logo{width:44px;height:44px;border-radius:14px;background:var(--accent);display:grid;place-items:center;font-size:22px;box-shadow:0 6px 14px rgba(34,197,94,.28)}
-.hero .t h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.3px}
-.hero .t p{font-size:12px;color:var(--muted);margin:2px 0 0}
-.hero .set{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px;font-size:16px;cursor:pointer;box-shadow:var(--sh)}
+header{position:sticky;top:0;z-index:30;padding:calc(16px + env(safe-area-inset-top)) 0 12px;
+  background:linear-gradient(180deg,var(--bg) 80%, rgba(245,247,246,0))}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 2px 14px}
+.hero .logo{width:46px;height:46px;border-radius:15px;background:var(--accent);display:grid;place-items:center;color:#fff;box-shadow:0 6px 16px rgba(34,197,94,.28)}
+.hero .logo .icn{width:25px;height:25px;stroke-width:1.8}
+.hero .t h1{font-size:21px;margin:0;font-weight:600;letter-spacing:.2px}
+.hero .t p{font-size:12.5px;color:var(--muted);margin:3px 0 0;font-weight:400}
+.hero .set{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:10px;color:var(--muted);cursor:pointer;box-shadow:var(--sh);display:grid;place-items:center}
+.hero .set .icn{width:19px;height:19px}
 
-.search{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
-  border-radius:16px;padding:11px 14px;margin-bottom:12px;box-shadow:var(--sh);}
-.search .ic{opacity:.55;font-size:15px}
+.search{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);
+  border-radius:16px;padding:13px 16px;margin-bottom:14px;box-shadow:var(--sh)}
+.search .s-ic{color:#b3bcc6;display:grid;place-items:center}
+.search .s-ic .icn{width:18px;height:18px}
 .search input{flex:1;background:none;border:none;outline:none;color:var(--txt);font:inherit;font-size:15px}
-.search input::placeholder{color:var(--muted)}
+.search input::placeholder{color:#b3bcc6}
 .search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,197,94,.12)}
 
 /* ---------- stats ---------- */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;}
-.s{border:1px solid var(--line);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;background:var(--card);box-shadow:var(--sh);transition:.15s}
-.s .b{font-size:21px;font-weight:800;line-height:1.1}
-.s .l{font-size:11px;color:var(--muted);margin-top:4px}
-.s .d{width:7px;height:7px;border-radius:50%;margin:3px auto 0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.s{border:1px solid var(--line);border-radius:18px;padding:14px 6px 12px;text-align:center;cursor:pointer;
+  background:var(--card);box-shadow:var(--sh);transition:.15s}
+.s .b{font-size:22px;font-weight:600;line-height:1.05;letter-spacing:-.3px}
+.s .l{font-size:11.5px;color:var(--muted);margin-top:5px}
+.s .d{width:7px;height:7px;border-radius:50%;margin:4px auto 0}
 .s.low .b{color:var(--danger)} .s.low .d{background:var(--danger)}
-.s.exp .b{color:var(--warn)} .s.exp .d{background:var(--warn)}
-.s.near .b{color:var(--ok)} .s.near .d{background:var(--ok)}
+.s.exp .b{color:var(--danger)} .s.exp .d{background:var(--danger)}
+.s.near .b{color:var(--warn)} .s.near .d{background:var(--warn)}
 .s.ring{background:var(--accent-soft);border-color:#cdeedb}
-.s.ring .b{color:var(--accent)} .s.ring .l{color:var(--accent)}
+.s.ring .b,.s.ring .l{color:var(--accent-dark)}
 .s.on{outline:2px solid var(--accent);outline-offset:-2px}
 
 /* ---------- category chips ---------- */
-.cats{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.cats{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .cats::-webkit-scrollbar{display:none}
-.catc{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;font-size:13px;color:var(--muted);
+.catc{flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:9px 15px;border-radius:999px;font-size:13.5px;color:var(--muted);
   background:var(--card);border:1px solid var(--line);cursor:pointer;white-space:nowrap;transition:.15s;box-shadow:var(--sh)}
-.catc .em{font-size:15px}
-.catc.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.catc .em{font-size:15px;line-height:1}
+.catc.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:500}
 
 /* ---------- grid cards ---------- */
-main{padding:0}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:4px}
-@media(min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
-.gcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;
-  padding:15px 12px 11px;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;
-  text-align:center;cursor:pointer;animation:up .3s both;overflow:hidden;transition:.15s}
+.sec{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 10px}
+.sec h3{margin:0;font-size:13.5px;color:var(--muted);font-weight:500;letter-spacing:.2px}
+.sec .n{font-size:12.5px;color:#b3bcc6}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:600px){.grid{grid-template-columns:repeat(3,1fr)}}
+.gcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:18px 14px 14px;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;
+  text-align:center;cursor:pointer;animation:up .32s both;transition:transform .15s,box-shadow .15s}
 .gcard:active{transform:scale(.98)}
-.gcard.need{border-color:#f6c9c9;background:linear-gradient(180deg,#fffafa,#fff)}
-.gcard.exp{border-color:#f6e0bb;background:linear-gradient(180deg,#fffcf5,#fff)}
-.gic{width:48px;height:48px;border-radius:15px;background:var(--accent-soft);display:grid;place-items:center;font-size:25px;margin-bottom:9px}
-.gnm{font-size:14px;font-weight:600;line-height:1.32;width:100%;height:2.64em;overflow:hidden;
+.gcard.need{border-color:#f7d0d0}
+.gcard.exp{border-color:#f7e3c2}
+@keyframes up{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.gic{width:52px;height:52px;border-radius:16px;background:var(--accent);color:#fff;display:grid;place-items:center;margin-bottom:11px}
+.gic .icn{width:27px;height:27px}
+.gnm{font-size:14.5px;font-weight:500;line-height:1.35;width:100%;height:2.7em;overflow:hidden;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
-.gqty{margin-top:7px;display:flex;align-items:baseline;gap:3px;justify-content:center}
-.gqty b{font-size:21px;font-weight:800;line-height:1}
-.gqty span{font-size:11px;color:var(--muted)}
-.gdue{font-size:11px;color:var(--muted);margin-top:4px}
+.gqty{margin-top:9px;display:flex;align-items:baseline;gap:3px;justify-content:center}
+.gqty b{font-size:23px;font-weight:600;line-height:1;letter-spacing:-.5px}
+.gqty span{font-size:11.5px;color:var(--muted)}
+.gdue{font-size:11.5px;color:#a6b0ba;margin-top:5px}
 .gdue.bad{color:var(--danger)} .gdue.warn{color:var(--warn)}
-.gpill{font-size:10px;padding:1px 8px;border-radius:999px;margin-top:5px;font-weight:600}
-.gpill.low{background:var(--danger-soft);color:var(--danger)}
+.gpill{font-size:10.5px;padding:2px 9px;border-radius:999px;margin-top:6px;font-weight:500}
+.gpill.danger{background:var(--danger-soft);color:var(--danger)}
 .gpill.warn{background:var(--warn-soft);color:var(--warn)}
-.gstep{display:flex;gap:8px;margin-top:9px;width:100%}
-.gstep .sbtn{flex:1;height:30px}
-.gcard .trash{top:7px;right:7px;font-size:13px}
-.sec{display:flex;align-items:center;justify-content:space-between;margin:16px 2px 8px}
-.sec h3{margin:0;font-size:13px;color:var(--muted);font-weight:600}
-.sec .n{font-size:12px;color:var(--muted)}
-.card{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
-  border-radius:var(--r);padding:13px 12px;margin-bottom:10px;box-shadow:var(--sh);
-  animation:up .3s both;position:relative;overflow:hidden}
-.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent}
-.card.need::before{background:var(--danger)}
-.card.exp::before{background:var(--warn)}
-@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:22px;flex:0 0 auto;background:var(--accent-soft)}
-.info{flex:1;min-width:0}
-.info .nm{font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.info .meta{margin-top:5px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.pill{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:600}
-.pill.low{background:var(--danger-soft);color:var(--danger)}
-.pill.warn{background:var(--warn-soft);color:var(--warn)}
-.pill.ok{background:var(--ok-soft);color:var(--ok)}
-.pill.arch{background:#eef1f4;color:var(--muted)}
-.info .due{margin-top:5px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
-.info .due.bad{color:var(--danger)} .info .due.warn{color:var(--warn)}
-.qty{text-align:center;flex:0 0 auto}
-.qty .v{font-size:22px;font-weight:800;line-height:1}
-.qty .u{font-size:11px;color:var(--muted);margin-top:2px}
-.step{display:flex;gap:6px;margin-top:7px}
-.sbtn{width:34px;height:30px;border-radius:9px;background:var(--card2);border:1px solid var(--line);
-  color:var(--txt);font-size:16px;font-weight:700;cursor:pointer;line-height:1;transition:.1s}
-.sbtn:active{transform:scale(.9)}
-.sbtn.m{color:var(--danger)} .sbtn.p{color:var(--ok)}
-.trash{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;opacity:.5;transition:.2s}
-.trash:active{opacity:1;transform:scale(1.2)}
-.empty{text-align:center;color:var(--muted);padding:56px 20px}
-.empty .e{font-size:44px;margin-bottom:12px}
-.empty p{margin:6px 0}
+.gpill.arch{background:#eef1f4;color:var(--muted)}
+.gstep{display:flex;gap:9px;margin-top:11px;width:100%}
+.sbtn{height:32px;flex:1;border-radius:11px;background:var(--card2);border:1px solid var(--line);
+  color:var(--txt);font-size:16px;font-weight:600;cursor:pointer;line-height:1;transition:.1s}
+.sbtn:active{transform:scale(.93)}
+.sbtn.m{color:var(--danger)} .sbtn.p{color:var(--accent-dark)}
+.trash{position:absolute;top:8px;right:8px;background:none;border:none;color:#c7ced6;cursor:pointer;padding:3px;transition:.2s}
+.trash .icn{width:15px;height:15px}
+.trash:active{color:var(--danger);transform:scale(1.12)}
+.empty{text-align:center;color:var(--muted);padding:64px 20px}
+.empty .e{font-size:46px;margin-bottom:14px}
+.empty p{margin:7px 0}
 
 /* ---------- bottom nav + fab ---------- */
-.nav{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:8px 14px calc(10px + env(safe-area-inset-bottom));
-  background:linear-gradient(180deg,rgba(244,246,248,0), var(--bg) 40%);display:flex;justify-content:center;}
-.navin{width:100%;max-width:520px;display:grid;grid-template-columns:1fr 64px 1fr;align-items:center;gap:8px;
-  background:var(--card);border:1px solid var(--line);border-radius:22px;padding:8px 10px;box-shadow:var(--sh)}
-.nbtn{background:none;border:none;color:var(--muted);font-size:12px;padding:5px;border-radius:12px;cursor:pointer;transition:.15s}
-.nbtn .em{display:block;font-size:18px;margin-bottom:2px}
-.nbtn.on{color:var(--accent)}
-.fab{width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:#fff;font-size:26px;font-weight:700;
-  cursor:pointer;box-shadow:0 10px 24px rgba(34,197,94,.4);margin:0 auto;transition:.15s}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px 16px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(245,247,246,0), var(--bg) 42%);display:flex;justify-content:center}
+.navin{width:100%;max-width:520px;display:grid;grid-template-columns:1fr 66px 1fr;align-items:center;gap:8px;
+  background:var(--card);border:1px solid var(--line);border-radius:24px;padding:9px 12px;box-shadow:0 6px 24px rgba(16,24,40,.08)}
+.nbtn{background:none;border:none;color:#a6b0ba;font-size:11.5px;padding:4px;border-radius:12px;cursor:pointer;transition:.15s;font-family:inherit}
+.nbtn .icn{width:21px;height:21px;margin:0 auto 4px}
+.nbtn.on{color:var(--accent-dark)}
+.fab{width:54px;height:54px;border-radius:50%;background:var(--accent);border:none;color:#fff;font-size:27px;
+  font-weight:400;cursor:pointer;box-shadow:0 8px 22px rgba(34,197,94,.42);margin:0 auto;transition:.15s;line-height:1}
 .fab:active{transform:scale(.92)}
 
 /* ---------- sheets ---------- */
 .overlay{position:fixed;inset:0;background:rgba(15,23,42,.32);backdrop-filter:blur(2px);z-index:50;display:none;align-items:flex-end;justify-content:center}
 .overlay.show{display:flex}
-.sheet{background:var(--card);width:100%;max-width:560px;border-radius:24px 24px 0 0;
-  padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;box-shadow:0 -10px 30px rgba(16,24,40,.15);animation:sl .28s both}
+.sheet{background:var(--card);width:100%;max-width:560px;border-radius:26px 26px 0 0;
+  padding:20px 20px calc(20px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;
+  box-shadow:0 -10px 34px rgba(16,24,40,.14);animation:sl .28s both}
 @keyframes sl{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
-.sheet h2{margin:0 0 16px;font-size:18px;display:flex;align-items:center;justify-content:space-between}
-.sheet h2 .x{background:var(--card2);border:1px solid var(--line);color:var(--muted);font-size:16px;padding:6px 10px;border-radius:10px}
-.field{margin-bottom:13px}
-.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-.field input,.field select,.field textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);
+.sheet h2{margin:0 0 18px;font-size:18px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+.sheet h2 .x{background:var(--card2);border:1px solid var(--line);color:var(--muted);font-size:16px;padding:7px 11px;border-radius:11px;cursor:pointer}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:7px}
+.field input,.field select,.field textarea{width:100%;padding:13px;border-radius:13px;border:1px solid var(--line);
   background:#fff;color:var(--txt);font:inherit;font-size:15px;outline:none}
 .field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,197,94,.12)}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.save{width:100%;padding:14px;border:none;border-radius:14px;background:var(--accent);color:#fff;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 10px 24px rgba(34,197,94,.28)}
-.check{display:flex;align-items:center;gap:8px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.save{width:100%;padding:15px;border:none;border-radius:15px;background:var(--accent);color:#fff;font-weight:600;font-size:16px;cursor:pointer;
+  box-shadow:0 8px 22px rgba(34,197,94,.28);font-family:inherit}
+.check{display:flex;align-items:center;gap:9px}
 .check input{width:auto}
-.toast{position:fixed;left:50%;bottom:calc(var(--sb-h) + 22px);transform:translateX(-50%);background:#1f2937;
-  color:#fff;padding:11px 18px;border-radius:12px;font-size:13px;z-index:60;opacity:0;transition:opacity .2s;box-shadow:var(--sh)}
+.catrow{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;box-shadow:var(--sh)}
+.catrow .gic{width:40px;height:40px;border-radius:13px;margin:0}
+.catrow .gic .icn{width:21px;height:21px}
+.toast{position:fixed;left:50%;bottom:calc(var(--sb-h) + 24px);transform:translateX(-50%);background:#1f2937;color:#fff;
+  padding:12px 20px;border-radius:13px;font-size:13px;z-index:60;opacity:0;transition:opacity .2s;box-shadow:var(--sh)}
 .toast.show{opacity:1}
-a{color:var(--accent)}
+a{color:var(--accent-dark)}
+code{background:var(--card2);padding:1px 5px;border-radius:5px;font-size:12px}
 </style>
 </head>
 <body>
-<div class="max">
 
+<!-- 线性图标 sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-pill" viewBox="0 0 24 24"><path d="M10.6 20.4 3.6 13.4a5 5 0 0 1 7.1-7.1l7 7a5 5 0 0 1-7.1 7.1Z"/><path d="m8.5 8.5 7 7"/></symbol>
+  <symbol id="i-capsule" viewBox="0 0 24 24"><rect x="2.6" y="7.4" width="18.8" height="9.2" rx="4.6"/><path d="M12 7.4v9.2"/></symbol>
+  <symbol id="i-bottle" viewBox="0 0 24 24"><path d="M9.5 2.6h5"/><path d="M10.6 2.6v3.1L8.7 8.4v11a1.6 1.6 0 0 0 1.6 1.6h3.4a1.6 1.6 0 0 0 1.6-1.6v-11l-1.9-2.7V2.6"/><path d="M8.7 13h6.6"/></symbol>
+  <symbol id="i-spray" viewBox="0 0 24 24"><path d="M9 8.6h6.2V20a1 1 0 0 1-1 1H10a1 1 0 0 1-1-1z"/><path d="M10.6 8.6V5h3.1v3.6"/><path d="M16.5 4.3h3"/><path d="M16.9 7.1h2.4"/></symbol>
+  <symbol id="i-dropper" viewBox="0 0 24 24"><path d="M12 2.6v3"/><path d="M9.2 8.3h5.6v6.5a2.8 2.8 0 1 1-5.6 0z"/><path d="M12 17.7v3.3"/></symbol>
+  <symbol id="i-cream" viewBox="0 0 24 24"><path d="M7.6 9.6h8.8v9.9a1.2 1.2 0 0 1-1.2 1.2H8.8a1.2 1.2 0 0 1-1.2-1.2z"/><path d="M9.6 9.6V6.7h4.8v2.9"/><path d="M9.6 3.3h4.8"/></symbol>
+  <symbol id="i-patch" viewBox="0 0 24 24"><rect x="2.5" y="8" width="19" height="8" rx="4"/><circle cx="8.4" cy="12" r=".95"/><circle cx="12" cy="12" r=".95"/><circle cx="15.6" cy="12" r=".95"/></symbol>
+  <symbol id="i-swab" viewBox="0 0 24 24"><path d="M4 20 14.4 9.6"/><path d="M13.6 4.6l5.8 5.8-2.6 2.6-5.8-5.8z"/></symbol>
+  <symbol id="i-mask" viewBox="0 0 24 24"><path d="M3 9.5c3-2 15-2 18 0v3.6c0 3.2-3.4 5.9-9 5.9s-9-2.7-9-5.9z"/><path d="M8.4 10.3v6"/><path d="M15.6 10.3v6"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M3.3 8 12 4l8.7 4v8L12 20l-8.7-4z"/><path d="M3.3 8 12 12l8.7-4"/><path d="M12 12v8"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.3s6 6.6 6 10.1a6 6 0 0 1-12 0c0-3.5 6-10.1 6-10.1z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.3"/><path d="M15.6 15.6 20 20"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><path d="M4 7h9M17.5 7H20M4 17h2.5M11 17h9"/><circle cx="15" cy="7" r="2.3"/><circle cx="8.5" cy="17" r="2.3"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M11 3.6H20v9l-8.4 8.4a1.6 1.6 0 0 1-2.3 0l-6.3-6.3a1.6 1.6 0 0 1 0-2.3z"/><circle cx="16.2" cy="7.8" r="1.3"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9.6 7V4.8h4.8V7"/><path d="M6.6 7l.9 12.2A1.4 1.4 0 0 0 8.9 20.5h6.2a1.4 1.4 0 0 0 1.4-1.3L17.4 7"/></symbol>
+</defs></svg>
+
+<div class="max">
   <header>
     <div class="hero">
-      <div class="logo">💊</div>
+      <div class="logo"><svg class="icn"><use href="#i-pill"/></svg></div>
       <div class="t">
         <h1>个人库存</h1>
         <p id="sub">药箱 · 家庭物品记录</p>
       </div>
-      <button class="set" id="btnInfo">⚙️</button>
+      <button class="set" id="btnInfo"><svg class="icn"><use href="#i-gear"/></svg></button>
     </div>
-    <div class="search"><span class="ic">🔍</span><input id="q" type="text" placeholder="搜索名称 / 备注…"></div>
+    <div class="search">
+      <span class="s-ic"><svg class="icn"><use href="#i-search"/></svg></span>
+      <input id="q" type="text" placeholder="搜索名称 / 备注…">
+    </div>
     <div class="stats" id="stats"></div>
     <div class="cats" id="cats"></div>
   </header>
@@ -172,16 +192,14 @@ a{color:var(--accent)}
   <div id="empty" class="empty hidden"></div>
 </div>
 
-<!-- 底部导航 + FAB -->
 <div class="nav">
   <div class="navin">
-    <button class="nbtn on" data-nav="list"><span class="em">📦</span>库存</button>
+    <button class="nbtn on" data-nav="list"><svg class="icn"><use href="#i-box"/></svg>库存</button>
     <button class="fab" id="btnAdd">＋</button>
-    <button class="nbtn" data-nav="cat"><span class="em">🏷️</span>分类</button>
+    <button class="nbtn" data-nav="cat"><svg class="icn"><use href="#i-tag"/></svg>分类</button>
   </div>
 </div>
 
-<!-- 编辑/新增 -->
 <div class="overlay" id="itemOverlay">
   <div class="sheet">
     <h2><span id="itemTitle">新增物品</span><button class="x" data-close>✕</button></h2>
@@ -201,26 +219,24 @@ a{color:var(--accent)}
   </div>
 </div>
 
-<!-- 分类 -->
 <div class="overlay" id="catOverlay">
   <div class="sheet">
     <h2><span>分类管理</span><button class="x" data-close>✕</button></h2>
-    <div class="field" style="display:flex;gap:8px">
+    <div class="field" style="display:flex;gap:9px">
       <input id="cat_new" type="text" placeholder="新分类名">
-      <button class="save" style="width:auto;padding:0 18px" id="cat_add">添加</button>
+      <button class="save" style="width:auto;padding:0 20px" id="cat_add">添加</button>
     </div>
     <div id="cat_list"></div>
   </div>
 </div>
 
-<!-- 设置/关于 -->
 <div class="overlay" id="infoOverlay">
   <div class="sheet">
     <h2><span>设置 / 备份</span><button class="x" data-close>✕</button></h2>
-    <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;flex-direction:column;gap:12px">
       <button class="save" id="btnExport">⬇️ 导出 JSON 备份</button>
-      <p style="font-size:12px;color:var(--muted);margin:4px 0">数据存于本地 SQLite 文件（<code>./data/stock.db</code>）。导出可作备份，删除前请先导出。</p>
-      <p style="font-size:12px;color:var(--muted);margin:0">图标分类示意：💊 药箱、🍎 食品、🧰 工具…按分类名自动匹配。</p>
+      <p style="font-size:12.5px;color:var(--muted);margin:2px 0">数据存于本地 SQLite 文件（<code>./data/stock.db</code>）。删除前请先导出备份。</p>
+      <p style="font-size:12.5px;color:var(--muted);margin:0">图标按物品名称自动匹配（片/胶囊/喷雾/滴剂/软膏/贴/棉签…）。</p>
     </div>
   </div>
 </div>
@@ -234,6 +250,19 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const fmt=n=>Number(n).toLocaleString("zh-CN",{maximumFractionDigits:2});
 const CAT_EMOJI={"家庭药箱":"💊","药箱":"💊","食品":"🍎","零食":"🍪","工具":"🧰","护肤":"🧴","化妆品":"💄","药品":"💊"};
 const cemo=n=>CAT_EMOJI[n]||"📦";
+function iconFor(name){
+  const n=name||"";
+  if(/创可贴|鼻贴|退热贴|贴膏|膏药|止痛膏|敷料|纱布/.test(n))return "patch";
+  if(/棉签/.test(n))return "swab";
+  if(/口罩/.test(n))return "mask";
+  if(/喷雾|喷剂|喷鼻|吸入|鼻舒/.test(n))return "spray";
+  if(/滴眼|滴鼻|滴耳|滴剂|滴液/.test(n))return "dropper";
+  if(/软膏|乳膏|凝胶|洗剂|擦剂|油$|风油精|清凉油/.test(n))return "cream";
+  if(/口服液|溶液|液$|水$|精$/.test(n))return "bottle";
+  if(/胶囊/.test(n))return "capsule";
+  if(/片|丸|粒|泡腾|含片|散|丹|药/.test(n))return "pill";
+  return "pill";
+}
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),1800)}
 async function api(path,opts={}){
   const r=await fetch("/api"+path,{headers:{"Content-Type":"application/json"},...opts});
@@ -254,7 +283,7 @@ function visible(){
   return l;
 }
 function render(){
-  const all=state.items; const act=all.filter(i=>!i.archived);
+  const all=state.items;const act=all.filter(i=>!i.archived);
   const low=act.filter(i=>i.low_stock).length,exp=act.filter(i=>i.expired).length,near=act.filter(i=>i.expiring_soon).length;
   const pct=act.length?Math.round((act.length-exp-low)*100/act.length):0;
   $("#stats").innerHTML=`
@@ -268,7 +297,7 @@ function render(){
   $$("#cats .catc").forEach(el=>el.onclick=()=>{state.cat=Number(el.dataset.c);render()});
   const lv=visible();const empty=$("#empty");
   const groups={};lv.forEach(i=>{const k=i.category_name||"未分类";(groups[k]=groups[k]||[]).push(i)});
-  if(!lv.length){empty.classList.remove("hidden");empty.innerHTML=`<div class="e">📭</div><p>没有符合条件的物品</p><p style="font-size:12px;color:var(--muted)">点右下角 ＋ 添加，或换个筛选条件</p>`;$("#list").innerHTML="";return}
+  if(!lv.length){empty.classList.remove("hidden");empty.innerHTML=`<div class="e">📭</div><p>没有符合条件的物品</p><p style="font-size:12.5px;color:var(--muted)">点右下角 ＋ 添加，或换个筛选条件</p>`;$("#list").innerHTML="";return}
   empty.classList.add("hidden");let html="";
   Object.keys(groups).sort((a,b)=>(a==="未分类")-(b==="未分类")||a.localeCompare(b)).forEach(k=>{
     const it=groups[k];
@@ -276,18 +305,18 @@ function render(){
     it.forEach((i,idx)=>{
       const need=i.low_stock,expired=i.expired||i.expiring_soon;
       let tag='';
-      if(i.archived)tag=`<div class="gpill" style="background:#eef1f4;color:var(--muted)">已归档</div>`;
-      else if(i.expired)tag=`<div class="gpill warn">已过期</div>`;
+      if(i.archived)tag=`<div class="gpill arch">已归档</div>`;
+      else if(i.expired)tag=`<div class="gpill danger">已过期</div>`;
       else if(i.expiring_soon)tag=`<div class="gpill warn">将过期</div>`;
-      else if(i.low_stock)tag=`<div class="gpill low">需补充</div>`;
+      else if(i.low_stock)tag=`<div class="gpill danger">需补充</div>`;
       const due=i.expiry_date
         ? `<div class="gdue ${i.expired?'bad':(i.expiring_soon?'warn':'')}">效期 ${esc(i.expiry_date)}</div>`
         : `<div class="gdue">无有效期</div>`;
       html+=`<div class="gcard ${need?'need':''} ${expired?'exp':''}" data-id="${i.id}"
           title="${esc(i.name)}${i.note?' · '+esc(i.note):''}"
           style="animation-delay:${Math.min(idx*14,200)}ms">
-        <button class="trash" data-del="${i.id}">🗑</button>
-        <div class="gic">${cemo(i.category_name)}</div>
+        <button class="trash" data-del="${i.id}"><svg class="icn"><use href="#i-trash"/></svg></button>
+        <div class="gic"><svg class="icn"><use href="#i-${iconFor(i.name)}"/></svg></div>
         <div class="gnm">${esc(i.name)}</div>
         <div class="gqty"><b style="color:${i.low_stock?'var(--danger)':'var(--txt)'}">${fmt(i.quantity)}</b><span>${esc(i.unit)}</span></div>
         ${due}${tag}
@@ -319,7 +348,9 @@ async function saveItem(){const b={name:$("#f_name").value.trim(),category_id:$(
   try{if(state.editingId)await api(`/items/${state.editingId}`,{method:"PUT",body:JSON.stringify(b)});else await api("/items",{method:"POST",body:JSON.stringify(b)});
     $("#itemOverlay").classList.remove("show");await load();toast(state.editingId?"已更新":"已添加")}catch(e){toast("保存失败: "+e.message)}}
 
-function renderCatList(){$("#cat_list").innerHTML=state.categories.map(c=>`<div class="card" style="animation:none"><div class="ic" style="width:38px;height:38px;font-size:18px">${cemo(c.name)}</div><div class="info" style="flex:1"><div class="nm">${esc(c.name)}</div></div><button class="trash" data-cdel="${c.id}" style="opacity:.8">🗑</button></div>`).join("")||`<div class="empty"><div class="e">🏷️</div><p>暂无分类</p></div>`;
+function renderCatList(){
+  $("#cat_list").innerHTML=state.categories.map(c=>`<div class="catrow"><div class="gic"><svg class="icn"><use href="#i-box"/></svg></div><div style="flex:1;font-weight:500">${esc(c.name)}</div><button class="trash" style="position:static" data-cdel="${c.id}"><svg class="icn"><use href="#i-trash"/></svg></button></div>`).join("")
+    ||`<div class="empty"><div class="e">🏷️</div><p>暂无分类</p></div>`;
   $$("#cat_list [data-cdel]").forEach(el=>el.onclick=async()=>{if(confirm("删除该分类? 分类下物品会变未分类")){try{await api(`/categories/${el.dataset.cdel}`,{method:"DELETE"});await load();renderCatList()}catch(e){toast(e.message)}}})}
 
 $("#btnAdd").onclick=()=>openItem(null);
