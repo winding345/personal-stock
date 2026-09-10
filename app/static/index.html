@@ -48,19 +48,14 @@ header{position:sticky;top:0;z-index:30;padding:calc(16px + env(safe-area-inset-
 .search input::placeholder{color:#b3bcc6}
 .search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,197,94,.12)}
 
-/* ---------- stats ---------- */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-.s{border:1px solid var(--line);border-radius:18px;padding:14px 6px 12px;text-align:center;cursor:pointer;
-  background:var(--card);box-shadow:var(--sh);transition:.15s}
-.s .b{font-size:22px;font-weight:600;line-height:1.05;letter-spacing:-.3px}
-.s .l{font-size:11.5px;color:var(--muted);margin-top:5px}
-.s .d{width:7px;height:7px;border-radius:50%;margin:4px auto 0}
-.s.low .b{color:var(--danger)} .s.low .d{background:var(--danger)}
-.s.exp .b{color:var(--danger)} .s.exp .d{background:var(--danger)}
-.s.near .b{color:var(--warn)} .s.near .d{background:var(--warn)}
-.s.ring{background:var(--accent-soft);border-color:#cdeedb}
-.s.ring .b,.s.ring .l{color:var(--accent-dark)}
-.s.on{outline:2px solid var(--accent);outline-offset:-2px}
+/* ---------- 汇总文字 ---------- */
+.summary{display:flex;gap:18px;flex-wrap:wrap;margin:0 4px 14px;font-size:13.5px;color:var(--muted)}
+.summary span{cursor:pointer;transition:.15s}
+.summary b{color:var(--txt);font-weight:600;margin-left:2px}
+.summary span.on{color:var(--accent-dark)}
+.summary span.on b{color:var(--accent-dark)}
+.summary .exp b{color:var(--danger)}
+.summary .near b{color:var(--warn)}
 
 /* ---------- category chips ---------- */
 .cats{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -105,8 +100,6 @@ header{position:sticky;top:0;z-index:30;padding:calc(16px + env(safe-area-inset-
 .gqty b.pop{animation:pop .42s cubic-bezier(.34,1.56,.64,1)}
 @keyframes cardpulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.42)}100%{box-shadow:0 0 0 14px rgba(34,197,94,0)}}
 .gcard.pulse{animation:cardpulse .5s ease-out}
-@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.16)}100%{transform:scale(1)}}
-.s.bumped .b{animation:bump .4s cubic-bezier(.34,1.56,.64,1)}
 .sbtn{height:30px;flex:1;border-radius:10px;background:var(--card2);border:1px solid var(--line);
   color:var(--txt);font-size:16px;font-weight:600;cursor:pointer;line-height:1;transition:transform .1s,background .15s}
 .sbtn:hover{background:#f0f4f2}
@@ -202,7 +195,7 @@ code{background:var(--card2);padding:1px 5px;border-radius:5px;font-size:12px}
       <span class="s-ic"><svg class="icn"><use href="#i-search"/></svg></span>
       <input id="q" type="text" placeholder="搜索名称 / 备注…">
     </div>
-    <div class="stats" id="stats"></div>
+    <div class="summary" id="summary"></div>
     <div class="cats" id="cats"></div>
   </header>
 
@@ -315,18 +308,11 @@ function visible(){
 function render(){
   const all=state.items;const act=all.filter(i=>!i.archived);
   const low=act.filter(i=>i.low_stock).length,exp=act.filter(i=>i.expired).length,near=act.filter(i=>i.expiring_soon).length;
-  const pct=act.length?Math.round((act.length-exp-low)*100/act.length):0;
-  $("#stats").innerHTML=`
-    <div class="s ring ${state.filter==='all'?'on':''}" data-f="all"><div class="b">${fmt(pct)}%</div><div class="l">健康度</div></div>
-    <div class="s low ${state.filter==='low'?'on':''}" data-f="low"><div class="b">${low}</div><div class="l">需补充</div><div class="d"></div></div>
-    <div class="s exp ${state.filter==='expired'?'on':''}" data-f="expired"><div class="b">${exp}</div><div class="l">已过期</div><div class="d"></div></div>
-    <div class="s near ${state.filter==='expiring'?'on':''}" data-f="expiring"><div class="b">${near}</div><div class="l">将过期</div><div class="d"></div></div>`;
-  $$("#stats .s").forEach(s=>s.onclick=()=>{state.filter=s.dataset.f;render()});
-  // 统计变化时轻微跳动
-  const cur={all:pct,low,exp,near};
-  $$("#stats .s").forEach(el=>{const f=el.dataset.f;
-    if(state.prevCounts&&state.prevCounts[f]!==undefined&&state.prevCounts[f]!==cur[f])el.classList.add("bumped")});
-  state.prevCounts=cur;
+  $("#summary").innerHTML=`
+    <span class="${state.filter==='all'?'on':''}" data-f="all">总数量<b>${act.length}</b></span>
+    <span class="exp ${state.filter==='expired'?'on':''}" data-f="expired">过期数量<b>${exp}</b></span>
+    <span class="near ${state.filter==='expiring'?'on':''}" data-f="expiring">临期数量<b>${near}</b></span>`;
+  $$("#summary span").forEach(s=>s.onclick=()=>{state.filter=s.dataset.f;render()});
   const cc=[{id:0,name:"全部",em:"🗂️"}].concat(state.categories.map(c=>({id:c.id,name:c.name,em:cemo(c.name)})));
   $("#cats").innerHTML=cc.map(c=>`<div class="catc ${state.cat===c.id?'on':''}" data-c="${c.id}"><span class="em">${c.em}</span>${esc(c.name)}</div>`).join("");
   $$("#cats .catc").forEach(el=>el.onclick=()=>{state.cat=Number(el.dataset.c);render()});
