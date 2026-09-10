@@ -337,7 +337,7 @@ function render(){
       else if(i.expiring_soon)tag=`<div class="gpill warn">将过期</div>`;
       else if(i.low_stock)tag=`<div class="gpill danger">需补充</div>`;
       const due=i.expiry_date
-        ? `<div class="gdue ${i.expired?'bad':(i.expiring_soon?'warn':'')}">效期 ${esc(i.expiry_date)}</div>`
+        ? `<div class="gdue ${i.expired?'bad':(i.expiring_soon?'warn':'')}">有效期 ${esc(i.expiry_date)}</div>`
         : `<div class="gdue">无有效期</div>`;
       html+=`<div class="gcard ${need?'need':''} ${expired?'exp':''} ${i.id===state.pulseId?'pulse':''}" data-id="${i.id}"
           title="${esc(i.name)}${i.note?' · '+esc(i.note):''}"
