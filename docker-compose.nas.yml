@@ -1,0 +1,26 @@
+# NAS 部署专用（用已构建好的镜像，不再联网 build）
+#
+# 适用场景：NAS 拉不到 Docker Hub 基础镜像（比如镜像加速器不可用）
+#
+# 用法：
+#   1) 在能构建的机器上导出镜像：
+#        docker save personal-stock:latest | gzip > personal-stock-image.tar.gz
+#   2) 传到 NAS 并导入：
+#        docker load < personal-stock-image.tar.gz
+#   3) 改下面 volumes 左边为你的实际数据目录，然后：
+#        docker compose -f docker-compose.nas.yml up -d
+#
+services:
+  stock:
+    image: personal-stock:latest
+    container_name: personal-stock
+    restart: unless-stopped
+    ports:
+      # 左边是 NAS 上的端口，冲突就改它（右边必须是 8000）
+      - "8000:8000"
+    volumes:
+      # ⚠️ 改这里：指向你 NAS 上的 data 目录（绝对路径）
+      # 该目录里应有 stock.db 和 images/
+      - /vol1/1000/docker/personal-stock/data:/data
+    environment:
+      - STOCK_DB_PATH=/data/stock.db
