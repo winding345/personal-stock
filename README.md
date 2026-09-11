@@ -3,6 +3,23 @@
 一个**个人用的通用库存/物品记录网站**。手机优先，Docker 部署，数据存 SQLite。
 最初用来记录**家庭药箱**，但数据模型是通用的——建个「冰箱」「工具箱」就能记别的。
 
+## 装到手机（PWA）
+
+本项目带 **PWA** 支持，可以像 App 一样装到手机桌面——**不用上架、不用签名、不花钱**。
+
+| 平台 | 安装方式 |
+|---|---|
+| **iPhone / iPad** | Safari 打开 → 「分享」→「添加到主屏幕」 |
+| **Android** | Chrome 打开 → 菜单 →「安装应用」/「添加到主屏幕」 |
+
+装好后：
+- 桌面出现独立图标「**家库**」
+- 点开**全屏**运行，没有浏览器地址栏
+- 有启动画面、状态栏跟随主题色
+- **断网也能打开**（Service Worker 缓存了页面；数据仍需连到后端）
+
+> iOS 必须用 **Safari**（Chrome 在 iOS 上不支持添加到主屏幕）。
+
 ## 功能
 
 - **多仓库**：药箱 / 冰箱 / 工具箱…各自独立；**每个仓库有独立 URL**（`/w/1`），可收藏、可加到手机主屏
@@ -146,6 +163,9 @@ personal-stock/
 │   ├── schemas.py          # Pydantic 模型
 │   └── static/
 │       ├── index.html      # 移动端前端（单文件 SPA）
+│       ├── manifest.json   # PWA 清单
+│       ├── sw.js           # Service Worker（离线缓存）
+│       ├── icons/          # PWA 图标（192/512/掩码/apple-touch/favicon）
 │       └── fonts/          # 自托管 Poppins（OFL，见 NOTICE.txt）
 ├── data/                   # SQLite + 照片（gitignore，私有数据）
 ├── docs/research/          # 同类项目调研清单（仅结论，无截图）

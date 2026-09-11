@@ -8,7 +8,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .db import IMAGES_DIR, get_conn, init_db, now_iso, today_str
@@ -404,3 +404,13 @@ def index() -> str:
 def index_warehouse(cat_id: int) -> str:
     """仓库直达 URL（如 /w/1）：仍返回 SPA，由前端按路径切换仓库。"""
     return (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+
+
+@app.get("/sw.js")
+def service_worker():
+    """Service Worker 必须从站点根路径提供，作用域才能覆盖整个站点。"""
+    return FileResponse(
+        STATIC_DIR / "sw.js",
+        media_type="application/javascript",
+        headers={"Cache-Control": "no-cache", "Service-Worker-Allowed": "/"},
+    )

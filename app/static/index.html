@@ -3,7 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>个人库存记录</title>
+<title>家库 · 家庭库存管理</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#22c55e">
+<meta name="description" content="家庭物品与药箱库存管理">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png">
+<!-- iOS 添加到主屏幕 -->
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="家库">
+<meta name="application-name" content="家库">
 <style>
 /* ---------- 自托管字体 (Poppins, latin 子集, OFL) ---------- */
 @font-face{font-family:'Poppins';font-style:normal;font-weight:400;font-display:swap;src:url('/static/fonts/poppins-400.woff2') format('woff2');}
@@ -196,7 +210,7 @@ code{background:var(--card2);padding:1px 5px;border-radius:5px;font-size:12px}
   <header>
     <div class="hero">
       <div class="t">
-        <h1 id="whName">个人库存</h1>
+        <h1 id="whName">家库</h1>
         <p id="sub">家庭物品记录</p>
       </div>
     </div>
@@ -338,7 +352,7 @@ function render(){
   const all=state.items.filter(i=>!state.cat||i.category_id===state.cat);
   const act=all.filter(i=>!i.archived);
   const low=act.filter(i=>i.low_stock).length,exp=act.filter(i=>i.expired).length,near=act.filter(i=>i.expiring_soon).length;
-  $("#whName").textContent=cur?cur.name:"个人库存";
+  $("#whName").textContent=cur?cur.name:"家库";
   $("#sub").textContent=state.categories.length?"家庭物品记录":"点底部「＋仓库」新建一个仓库";
   $("#summary").innerHTML=`
     <span class="${state.filter==='all'?'on':''}" data-f="all">总数量<b>${act.length}</b></span>
@@ -562,6 +576,13 @@ $$(".overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.class
 $$("[data-close]").forEach(b=>b.onclick=()=>b.closest(".overlay").classList.remove("show"));
 $("#q").addEventListener("input",e=>{state.q=e.target.value.trim();render()});
 load();
+
+/* ---- PWA：注册 Service Worker（提供离线打开 + 可安装）---- */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("/sw.js").catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
