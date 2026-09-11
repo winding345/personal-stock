@@ -4,10 +4,11 @@ services:
     container_name: personal-stock
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      # 左边是宿主机(NAS)端口，可用 .env 里的 STOCK_PORT 覆盖
+      # 右边必须是 8000（容器内 uvicorn 的监听端口），不要改
+      - "${STOCK_PORT:-8000}:8000"
     volumes:
-      # SQLite 数据持久化：改为你 NAS 上的实际路径
-      - ./data:/data
-    # 环境变量可按需覆盖
+      # 数据目录：默认 ./data；可用 .env 里的 STOCK_DATA 指定绝对路径
+      - ${STOCK_DATA:-./data}:/data
     environment:
       - STOCK_DB_PATH=/data/stock.db
