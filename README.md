@@ -90,21 +90,12 @@ docker compose up -d --build
 
 ## 环境变量
 
-`docker-compose.yml` 支持用 `.env` 覆盖（`.env` 已被 git 忽略，更新时不会冲突）：
-
-```bash
-cp .env.example .env
-# 编辑 .env：
-#   STOCK_PORT=3456                                   # 宿主机端口（默认 8000）
-#   STOCK_DATA=/vol1/1000/docker/personal-stock/data  # 数据目录（默认 ./data）
-```
-
 | 变量 | 默认 | 说明 |
 |---|---|---|
-| `STOCK_PORT` | `8000` | 宿主机对外端口（容器内恒为 8000） |
-| `STOCK_DATA` | `./data` | 数据目录（SQLite + 照片） |
-| `STOCK_DB_PATH` | `/data/stock.db` | 容器内数据库路径（一般不用改） |
-| `STOCK_IMAGES_DIR` | `/data/images` | 容器内照片目录（一般不用改） |
+| `STOCK_DB_PATH` | `/data/stock.db` | SQLite 文件路径 |
+| `STOCK_IMAGES_DIR` | `/data/images` | 物品照片目录 |
+
+> 端口和数据路径直接在 `docker-compose.yml` 里改（见下方「更新部署」）。
 
 ## 更新部署
 
@@ -114,10 +105,17 @@ git pull                          # 拉最新代码（data/ 不受影响）
 docker compose up -d --build      # 重新构建并重启
 ```
 
-> 因为 `data/` 是 gitignore 的本地目录，`git pull` **不会覆盖你的数据**。
+> `data/` 是 gitignore 的本地目录，`git pull` **不会覆盖你的数据**。
 
-**唯一注意**：不要在仓库文件（尤其 `docker-compose.yml`）上做本地修改，否则 `git pull` 会冲突。
-端口、数据路径这类个性化配置**统一写进 `.env`**（见上）。
+**如果你在 NAS 上改过 `docker-compose.yml`**（比如换端口、改数据路径），而这次更新恰好也动到了这个文件，`git pull` 会报冲突。两种处理：
+
+```bash
+# 方式一：先看自己改了什么，再决定保留哪边
+git diff docker-compose.yml
+
+# 方式二：暂存本地改动 → 拉取 → 放回
+git stash && git pull && git stash pop
+```
 
 ## API 概览
 
