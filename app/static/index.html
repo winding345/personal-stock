@@ -245,7 +245,6 @@ code{background:var(--card2);padding:1px 5px;border-radius:5px;font-size:12px}
   <div class="sheet">
     <h2><span id="itemTitle">新增物品</span><button class="x" data-close>✕</button></h2>
     <div class="field"><label>名称 *</label><input id="f_name" type="text" placeholder="例如布洛芬缓释胶囊"></div>
-    <div class="field"><label>分类</label><select id="f_category"></select></div>
     <div class="row2">
       <div class="field"><label>数量</label><input id="f_quantity" type="number" inputmode="decimal" value="0"></div>
       <div class="field"><label>单位</label><input id="f_unit" type="text" value="盒"></div>
@@ -413,16 +412,19 @@ async function uploadPhoto(id,blob){
 }
 function setPhotoPreview(url){$("#pv").innerHTML=url?`<img src="${esc(url)}" alt="">`:`<span>未设置</span>`}
 
-function fillCat(sel){const s=$("#f_category");s.innerHTML=`<option value="">未分类</option>`+state.categories.map(c=>`<option value="${c.id}" ${c.id===sel?"selected":""}>${esc(c.name)}</option>`).join("")}
 function openItem(id){state.editingId=id||null;state.pendingPhoto=null;state.removePhoto=false;
-  $("#itemTitle").textContent=id?"编辑物品":"新增物品";fillCat();
+  $("#itemTitle").textContent=id?"编辑物品":"新增物品";
   if(id){const i=state.items.find(x=>x.id===id);$("#f_name").value=i.name;$("#f_quantity").value=i.quantity;$("#f_unit").value=i.unit;
-    $("#f_threshold").value=i.threshold;$("#f_expiry").value=i.expiry_date||"";$("#f_note").value=i.note||"";$("#f_archived").checked=!!i.archived;$("#f_category").value=i.category_id!=null?i.category_id:"";
+    $("#f_threshold").value=i.threshold;$("#f_expiry").value=i.expiry_date||"";$("#f_note").value=i.note||"";$("#f_archived").checked=!!i.archived;
     setPhotoPreview(i.image||null)}
   else{$("#f_name").value="";$("#f_quantity").value=0;$("#f_unit").value="盒";$("#f_threshold").value=0;$("#f_expiry").value="";$("#f_note").value="";$("#f_archived").checked=false;
     setPhotoPreview(null)}
   $("#itemOverlay").classList.add("show")}
-async function saveItem(){const b={name:$("#f_name").value.trim(),category_id:$("#f_category").value?Number($("#f_category").value):null,
+async function saveItem(){
+  // 归属仓库：编辑时保持不变，新增时归到当前仓库（不再让用户选分类）
+  const editing=state.editingId?state.items.find(x=>x.id===state.editingId):null;
+  const b={name:$("#f_name").value.trim(),
+  category_id:editing?editing.category_id:(state.cat||null),
   quantity:Number($("#f_quantity").value||0),unit:$("#f_unit").value.trim()||"个",threshold:Number($("#f_threshold").value||0),
   expiry_date:$("#f_expiry").value||null,note:$("#f_note").value.trim()||null,archived:$("#f_archived").checked};
   if(!b.name){toast("名称不能为空");return}
