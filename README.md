@@ -33,6 +33,7 @@
 - **搜索**：按名称 / 备注实时过滤
 - **导出**：`/api/export` 全量，`/api/export?category_id=N` 单仓库
 - **离线可用**：字体（Poppins）与图标（内联 SVG）全部自托管，不依赖 CDN
+- **子路径部署**：可挂在反向代理的子路径下（如 `/personal-stock/`），读取 `X-Forwarded-Prefix` 自动适配
 
 ## 界面结构
 
@@ -70,6 +71,10 @@
 ## 本地运行
 
 ```bash
+# 首次：从模板复制部署配置
+# （docker-compose.yml 不入库，端口、数据路径等本地配置改在这个文件里）
+cp docker-compose.yml.example docker-compose.yml
+
 # 生产模式
 docker compose up -d --build
 # 访问 http://localhost:8000
@@ -77,6 +82,10 @@ docker compose up -d --build
 # 开发模式（挂载源码 + 热更新）
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 ```
+
+> `docker-compose.yml` 已 gitignore，**不会入库**。仓库里只保留模板
+> `docker-compose.yml.example`（默认端口 `8000`）；你改端口、改数据目录都在本地的
+> `docker-compose.yml` 里改，`git pull` 不会覆盖、也不会冲突。
 
 ## 手机访问（局域网）
 
@@ -90,7 +99,11 @@ hostname -I        # 查本机 IP
 
 ## 部署到 NAS（Docker）
 
-把整个项目目录拷到 NAS，改 `docker-compose.yml` 里 `./data` 的宿主机路径：
+把整个项目目录拷到 NAS，先复制配置模板，再改 `docker-compose.yml` 里 `./data` 的宿主机路径：
+
+```bash
+cp docker-compose.yml.example docker-compose.yml
+```
 
 ```yaml
 volumes:
@@ -105,6 +118,30 @@ docker compose up -d --build
 - 数据放 NAS 持久化目录（非容器层），升级/重建不丢
 - `data/` 里的文件由容器内 root 写入；若 NAS 以非 root 用户跑容器，可能需 `chown`
 
+## 子路径部署（反向代理）
+
+支持部署在子路径下，例如用 Caddy 把 `https://域名/personal-stock/*` 转发到本应用：
+
+```caddy
+handle_path /personal-stock/* {
+    header_up X-Forwarded-Prefix /personal-stock
+    reverse_proxy 127.0.0.1:3456
+}
+```
+
+> 关键：反代要**剥掉** `/personal-stock` 前缀（`handle_path` 自动完成），
+> 并显式加上请求头 `X-Forwarded-Prefix: /personal-stock`。
+
+应用读取 `X-Forwarded-Prefix` 后，会把 SPA 里的 `<base href>` 注入成 `/personal-stock/`，
+前端所有静态资源、接口、图片、Service Worker 注册都随之带上该前缀。
+
+- **不带该请求头时 `base href="/"`**，直接访问 `http://<IP>:8000/` 的行为与以前完全一致
+- 子路径下**建议用带结尾斜杠的地址访问**（`/personal-stock/`）。不带斜杠时页面仍能正常渲染
+  （`<base>` 兜住所有相对路径），但该文档 URL 不在 SW 作用域（`/personal-stock/`）内，
+  PWA 离线/安装请用带斜杠的地址；也可在反代里加一条跳转：`redir /personal-stock /personal-stock/`
+- 前缀只接受 `[A-Za-z0-9_-/]`，非法值回退成 `/`
+- 数据库里存的图片字段仍是 `/images/xxx.jpg`，前端渲染时去掉前导斜杠后相对 `<base>` 解析，**数据无需迁移**
+
 ## 环境变量
 
 | 变量 | 默认 | 说明 |
@@ -112,7 +149,7 @@ docker compose up -d --build
 | `STOCK_DB_PATH` | `/data/stock.db` | SQLite 文件路径 |
 | `STOCK_IMAGES_DIR` | `/data/images` | 物品照片目录 |
 
-> 端口和数据路径直接在 `docker-compose.yml` 里改（见下方「更新部署」）。
+> 端口和数据路径直接在**本地的** `docker-compose.yml` 里改（从 `docker-compose.yml.example` 复制，见下方「更新部署」）。
 
 ## 更新部署
 
@@ -124,14 +161,13 @@ docker compose up -d --build      # 重新构建并重启
 
 > `data/` 是 gitignore 的本地目录，`git pull` **不会覆盖你的数据**。
 
-**如果你在 NAS 上改过 `docker-compose.yml`**（比如换端口、改数据路径），而这次更新恰好也动到了这个文件，`git pull` 会报冲突。两种处理：
+**`docker-compose.yml` 也已 gitignore、不在版本库里**（仓库里只有模板 `docker-compose.yml.example`），
+所以你在 NAS 上改过的端口、数据路径**不会和 `git pull` 冲突**，也不用再 stash。
+如果模板更新了、你想同步新默认值，手动对比一次即可：
 
 ```bash
-# 方式一：先看自己改了什么，再决定保留哪边
-git diff docker-compose.yml
-
-# 方式二：暂存本地改动 → 拉取 → 放回
-git stash && git pull && git stash pop
+git diff docker-compose.yml.example   # 看模板变了什么
+diff docker-compose.yml docker-compose.yml.example   # 和你本地的对比
 ```
 
 ## API 概览
@@ -151,7 +187,7 @@ git stash && git pull && git stash pop
 | DELETE | `/api/categories/{id}` | 删除仓库（物品变为未分类） |
 | GET | `/api/export` | 导出 JSON（`?category_id=N` 只导该仓库） |
 | GET | `/api/stats` | 统计 |
-| GET | `/w/{id}` | 仓库直达 URL（返回 SPA，前端按路径切换） |
+| GET | `/w/{id}` | 仓库直达 URL（返回 SPA，前端按路径切换；子路径部署时为 `<前缀>/w/{id}`） |
 
 ## 目录结构
 
@@ -170,7 +206,8 @@ personal-stock/
 ├── data/                   # SQLite + 照片（gitignore，私有数据）
 ├── docs/research/          # 同类项目调研清单（仅结论，无截图）
 ├── Dockerfile
-├── docker-compose.yml      # 生产
+├── docker-compose.yml.example  # 部署配置模板（入库，默认端口 8000）
+├── docker-compose.yml      # 本机部署配置（gitignore，从模板复制后自行修改）
 ├── docker-compose.dev.yml  # 开发（热更新）
 └── requirements.txt
 ```

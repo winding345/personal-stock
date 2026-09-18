@@ -2,17 +2,18 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
+<!--BASE-->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>家库 · 家庭库存管理</title>
 
 <!-- PWA -->
-<link rel="manifest" href="/static/manifest.json">
+<link rel="manifest" href="static/manifest.json">
 <meta name="theme-color" content="#22c55e">
 <meta name="description" content="家庭物品与药箱库存管理">
-<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="static/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="static/icons/favicon-16.png">
 <!-- iOS 添加到主屏幕 -->
-<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="static/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -20,10 +21,10 @@
 <meta name="application-name" content="家库">
 <style>
 /* ---------- 自托管字体 (Poppins, latin 子集, OFL) ---------- */
-@font-face{font-family:'Poppins';font-style:normal;font-weight:400;font-display:swap;src:url('/static/fonts/poppins-400.woff2') format('woff2');}
-@font-face{font-family:'Poppins';font-style:normal;font-weight:500;font-display:swap;src:url('/static/fonts/poppins-500.woff2') format('woff2');}
-@font-face{font-family:'Poppins';font-style:normal;font-weight:600;font-display:swap;src:url('/static/fonts/poppins-600.woff2') format('woff2');}
-@font-face{font-family:'Poppins';font-style:normal;font-weight:700;font-display:swap;src:url('/static/fonts/poppins-700.woff2') format('woff2');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:400;font-display:swap;src:url('static/fonts/poppins-400.woff2') format('woff2');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:500;font-display:swap;src:url('static/fonts/poppins-500.woff2') format('woff2');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:600;font-display:swap;src:url('static/fonts/poppins-600.woff2') format('woff2');}
+@font-face{font-family:'Poppins';font-style:normal;font-weight:700;font-display:swap;src:url('static/fonts/poppins-700.woff2') format('woff2');}
 
 :root{
   --bg:#f5f7f6; --card:#ffffff; --card2:#f7f9f8; --line:#e8ecea;
@@ -310,17 +311,19 @@ function iconFor(name){
 }
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),1800)}
 async function api(path,opts={}){
-  const r=await fetch("/api"+path,{headers:{"Content-Type":"application/json"},...opts});
+  const r=await fetch("api"+path,{headers:{"Content-Type":"application/json"},...opts});
   if(!r.ok){let d=r.statusText;try{const j=await r.json();if(j.detail)d=typeof j.detail==="string"?j.detail:JSON.stringify(j.detail)}catch(e){}throw new Error(d)}
   const ct=r.headers.get("Content-Type")||"";return ct.includes("json")?r.json():r.text();
 }
-/* ---- 仓库（分类）与 URL 路由：/w/<id> ---- */
+/* ---- 仓库（分类）与 URL 路由：<base>/w/<id> ----
+   <base href> 由后端按 X-Forwarded-Prefix 注入：根路径为 "/"，子路径为 "/personal-stock/"。
+   下面的相对路径都相对 <base> 解析，因此两种部署方式都能用。 */
 function catFromUrl(){
-  const m=location.pathname.match(/^\/w\/(\d+)/);
+  const m=location.pathname.match(/\/w\/(\d+)/);
   return m?Number(m[1]):(state.categories[0]?state.categories[0].id:0);
 }
 function setUrl(id){
-  const p="/w/"+id;
+  const p=new URL("w/"+id,document.baseURI).pathname;
   if(location.pathname!==p)history.pushState({cat:id},"",p);
 }
 async function load(){
@@ -379,7 +382,7 @@ function render(){
           style="animation-delay:${Math.min(idx*14,200)}ms">
         <button class="trash" data-del="${i.id}"><svg class="icn"><use href="#i-trash"/></svg></button>
         ${i.image
-          ? `<div class="gimg"><img src="${esc(i.image)}" alt="" loading="lazy"></div>`
+          ? `<div class="gimg"><img src="${esc(i.image).replace(/^\//,"")}" alt="" loading="lazy"></div>`
           : `<div class="gic"><svg class="icn"><use href="#i-${iconFor(i.name)}"/></svg></div>`}
         <div class="gnm">${esc(i.name)}</div>
         <div class="gqty"><b class="${i.id===state.pulseId?'pop':''}" style="color:${i.low_stock?'var(--danger)':'var(--txt)'}">${fmt(i.quantity)}</b><span>${esc(i.unit)}</span></div>
@@ -420,11 +423,14 @@ function shrink(file,max=720,q=.85){
 }
 async function uploadPhoto(id,blob){
   const fd=new FormData();fd.append("file",blob,"photo.jpg");
-  const r=await fetch(`/api/items/${id}/image`,{method:"POST",body:fd});
+  const r=await fetch(`api/items/${id}/image`,{method:"POST",body:fd});
   if(!r.ok){let d="上传失败";try{const j=await r.json();if(j.detail)d=j.detail}catch(e){};throw new Error(d)}
   return r.json();
 }
-function setPhotoPreview(url){$("#pv").innerHTML=url?`<img src="${esc(url)}" alt="">`:`<span>未设置</span>`}
+/* 数据库里存的图片字段是根绝对路径（/images/xxx.jpg）；去掉前导斜杠后相对 <base> 解析，
+   这样直连（base=/）和子路径（base=/personal-stock/）都对，且不用改库里的数据。 */
+function relUrl(u){return String(u||"").replace(/^\//,"")}
+function setPhotoPreview(url){$("#pv").innerHTML=url?`<img src="${esc(relUrl(url))}" alt="">`:`<span>未设置</span>`}
 
 function openItem(id){state.editingId=id||null;state.pendingPhoto=null;state.removePhoto=false;
   $("#itemTitle").textContent=id?"编辑物品":"新增物品";
@@ -559,7 +565,7 @@ $("#wh_save").onclick=async()=>{
   }catch(e){toast((whMode==="create"?"创建失败: ":"重命名失败: ")+e.message)}
 };
 $("#wh_name").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#wh_save").click()}});
-$("#wh_export").onclick=()=>{window.open(`/api/export?category_id=${whPanelId}`,"_blank")};
+$("#wh_export").onclick=()=>{window.open(`api/export?category_id=${whPanelId}`,"_blank")};
 $("#wh_del").onclick=async()=>{
   const c=state.categories.find(x=>x.id===whPanelId);
   if(!confirm(`删除仓库「${c?c.name:""}」？\n里面的物品会变成「未分类」，不会丢失。`))return;
@@ -577,10 +583,12 @@ $$("[data-close]").forEach(b=>b.onclick=()=>b.closest(".overlay").classList.remo
 $("#q").addEventListener("input",e=>{state.q=e.target.value.trim();render()});
 load();
 
-/* ---- PWA：注册 Service Worker（提供离线打开 + 可安装）---- */
+/* ---- PWA：注册 Service Worker（提供离线打开 + 可安装）----
+   "sw.js" 相对 <base> 解析：根路径下是 /sw.js，子路径下是 /personal-stock/sw.js；
+   作用域自然落在脚本所在目录，两种情况都正确。 */
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("/sw.js").catch(()=>{});
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
   });
 }
 </script>

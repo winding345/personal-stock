@@ -3,10 +3,11 @@ from __future__ import annotations
 
 import datetime as _dt
 import json
+import re
 import sqlite3
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -26,6 +27,11 @@ app.add_middleware(
 STATIC_DIR = Path(__file__).parent / "static"
 MAX_IMAGE_BYTES = 6 * 1024 * 1024  # 6MB
 ALLOWED_IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+
+# SPA 里预留的占位符：被替换成 <base href="...">，使前端所有相对路径
+# 在「根路径直连」和「子路径反代（X-Forwarded-Prefix）」两种场景下都正确。
+BASE_PLACEHOLDER = "<!--BASE-->"
+_ALLOWED_PREFIX_RE = re.compile(r"^[A-Za-z0-9_\-/]+$")
 
 
 @app.on_event("startup")
@@ -78,6 +84,34 @@ _ITEM_SELECT = """
     FROM items i
     LEFT JOIN categories c ON c.id = i.category_id
 """
+
+
+# ---------------- 子路径部署（base path） ----------------
+
+def normalize_prefix(raw: str | None) -> str:
+    """把 X-Forwarded-Prefix 规整成以 `/` 开头、以 `/` 结尾的路径。
+
+    无该头 / 非法值 → "/"（保持根路径直连的原有行为）。
+    只允许 [A-Za-z0-9_-/]，因此 ".."、"\\"、"?"、"#" 之类都会被拒绝。
+    """
+    if not raw:
+        return "/"
+    p = raw.strip()
+    if not p or not p.startswith("/"):
+        p = "/" + p
+    if not _ALLOWED_PREFIX_RE.match(p):
+        return "/"
+    p = re.sub(r"/{2,}", "/", p)   # 折叠重复斜杠
+    if not p.endswith("/"):
+        p += "/"
+    return p
+
+
+def _render_index(request: Request) -> HTMLResponse:
+    """读取 SPA 并把占位符替换为 <base href="...">（按请求头决定前缀）。"""
+    html = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+    base_href = normalize_prefix(request.headers.get("x-forwarded-prefix"))
+    return HTMLResponse(html.replace(BASE_PLACEHOLDER, f'<base href="{base_href}">', 1))
 
 
 # ---------------- items ----------------
@@ -396,21 +430,25 @@ app.mount("/images", StaticFiles(directory=IMAGES_DIR), name="images")
 
 
 @app.get("/", response_class=HTMLResponse)
-def index() -> str:
-    return (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+def index(request: Request) -> HTMLResponse:
+    return _render_index(request)
 
 
 @app.get("/w/{cat_id}", response_class=HTMLResponse)
-def index_warehouse(cat_id: int) -> str:
+def index_warehouse(cat_id: int, request: Request) -> HTMLResponse:
     """仓库直达 URL（如 /w/1）：仍返回 SPA，由前端按路径切换仓库。"""
-    return (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+    return _render_index(request)
 
 
 @app.get("/sw.js")
 def service_worker():
-    """Service Worker 必须从站点根路径提供，作用域才能覆盖整个站点。"""
+    """Service Worker 从它被请求的路径提供。
+
+    不再显式设置 Service-Worker-Allowed：作用域自然等于脚本所在目录——
+    根路径下是 `/`，子路径（/personal-stock/）下就是 `/personal-stock/`。
+    """
     return FileResponse(
         STATIC_DIR / "sw.js",
         media_type="application/javascript",
-        headers={"Cache-Control": "no-cache", "Service-Worker-Allowed": "/"},
+        headers={"Cache-Control": "no-cache"},
     )

@@ -1,3 +1,7 @@
 # 数据目录不进镜像
 *.db
 data/
+
+# 本机 compose 配置（含个人端口/路径）不进构建上下文
+docker-compose.yml
+docker-compose.yml.example

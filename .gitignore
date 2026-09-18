@@ -10,3 +10,7 @@ data/
 
 # 环境
 .env
+
+# 本机部署配置（端口/数据路径等个性化改动不入库）
+# 从模板复制：cp docker-compose.yml.example docker-compose.yml
+docker-compose.yml
